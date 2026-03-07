@@ -1,11 +1,19 @@
 const User = require('../models/User');
-const { sendSuccess, sendCreated, sendPaginated } = require('../utils/response');
+const { sendSuccess, sendPaginated } = require('../utils/response');
 
 // GET /api/users
 const getUsers = async (req, res, next) => {
   try {
-    // TODO: Listar usuarios con paginación (solo admin)
-    res.status(501).json({ success: false, message: 'Por implementar: GET /api/users' });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      User.find().skip(skip).limit(limit),
+      User.countDocuments(),
+    ]);
+
+    sendPaginated(res, users, total, page, limit);
   } catch (error) {
     next(error);
   }
@@ -14,8 +22,11 @@ const getUsers = async (req, res, next) => {
 // GET /api/users/:id
 const getUserById = async (req, res, next) => {
   try {
-    // TODO: Buscar usuario por ID
-    res.status(501).json({ success: false, message: 'Por implementar: GET /api/users/:id' });
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+    sendSuccess(res, user);
   } catch (error) {
     next(error);
   }
@@ -24,8 +35,19 @@ const getUserById = async (req, res, next) => {
 // PUT /api/users/:id
 const updateUser = async (req, res, next) => {
   try {
-    // TODO: Actualizar campos permitidos (nombre, email). No actualizar contraseña aquí.
-    res.status(501).json({ success: false, message: 'Por implementar: PUT /api/users/:id' });
+    const { nombre, email } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { nombre, email },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    sendSuccess(res, user);
   } catch (error) {
     next(error);
   }
@@ -34,8 +56,11 @@ const updateUser = async (req, res, next) => {
 // DELETE /api/users/:id
 const deleteUser = async (req, res, next) => {
   try {
-    // TODO: Eliminar usuario (solo admin)
-    res.status(501).json({ success: false, message: 'Por implementar: DELETE /api/users/:id' });
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+    sendSuccess(res, null, 'Usuario eliminado correctamente');
   } catch (error) {
     next(error);
   }
