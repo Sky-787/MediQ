@@ -1,0 +1,1112 @@
+openapi: 3.0.3
+
+info:
+  title: MediQ API
+  description: >
+    API REST para la gestión de citas médicas, usuarios y médicos de la
+    plataforma MediQ. La autenticación se realiza mediante JWT almacenado
+    en una cookie HTTP-only (`token`).
+  version: 1.0.0
+  contact:
+    name: MediQ Dev Team
+
+servers:
+  - url: http://localhost:5000/api
+    description: Servidor local de desarrollo
+
+# ─────────────────────────────────────────────
+# SECURITY
+# ─────────────────────────────────────────────
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+      description: >
+        JWT enviado automáticamente en la cookie HTTP-only `token`.
+        Se obtiene al hacer login o register.
+
+  # ─────────────────────────────────────────────
+  # SCHEMAS
+  # ─────────────────────────────────────────────
+  schemas:
+
+    # ── Primitivos de respuesta ──────────────────
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: OK
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Descripción del error
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error de validación
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: email
+              message:
+                type: string
+                example: Email inválido
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 42
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        totalPages:
+          type: integer
+          example: 5
+
+    # ── User ────────────────────────────────────
+    UserPublic:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 64a1f2b3c4e5d6f7a8b9c0d1
+        nombre:
+          type: string
+          example: Ana García
+        email:
+          type: string
+          format: email
+          example: ana@ejemplo.com
+        rol:
+          type: string
+          enum: [paciente, medico, admin]
+          example: paciente
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserUpdateBody:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Ana García
+        email:
+          type: string
+          format: email
+          example: ana@ejemplo.com
+
+    # ── Auth ────────────────────────────────────
+    RegisterBody:
+      type: object
+      required: [nombre, email, contrasena]
+      properties:
+        nombre:
+          type: string
+          example: Ana García
+        email:
+          type: string
+          format: email
+          example: ana@ejemplo.com
+        contrasena:
+          type: string
+          minLength: 6
+          example: secreto123
+        rol:
+          type: string
+          enum: [paciente, medico, admin]
+          default: paciente
+
+    LoginBody:
+      type: object
+      required: [email, contrasena]
+      properties:
+        email:
+          type: string
+          format: email
+          example: ana@ejemplo.com
+        contrasena:
+          type: string
+          example: secreto123
+
+    # ── Doctor ──────────────────────────────────
+    Doctor:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 64a1f2b3c4e5d6f7a8b9c0d2
+        userId:
+          $ref: '#/components/schemas/UserPublic'
+        especialidad:
+          type: string
+          example: Cardiología
+        registroMedico:
+          type: string
+          example: RM-00123
+        disponibilidad:
+          type: array
+          items: {}
+          example: []
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DoctorCreateBody:
+      type: object
+      required: [userId, especialidad, registroMedico]
+      properties:
+        userId:
+          type: string
+          example: 64a1f2b3c4e5d6f7a8b9c0d1
+        especialidad:
+          type: string
+          example: Cardiología
+        registroMedico:
+          type: string
+          example: RM-00123
+        disponibilidad:
+          type: array
+          items: {}
+          example: []
+
+    DoctorUpdateBody:
+      type: object
+      properties:
+        especialidad:
+          type: string
+          example: Neurología
+        registroMedico:
+          type: string
+          example: RM-00456
+        disponibilidad:
+          type: array
+          items: {}
+
+    # ── Appointment ─────────────────────────────
+    Appointment:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 64a1f2b3c4e5d6f7a8b9c0d3
+        pacienteId:
+          $ref: '#/components/schemas/UserPublic'
+        doctorId:
+          $ref: '#/components/schemas/Doctor'
+        fechaHora:
+          type: string
+          format: date-time
+          example: 2026-04-15T10:30:00.000Z
+        estado:
+          type: string
+          enum: [pendiente, confirmada, cancelada, completada]
+          default: pendiente
+        motivo:
+          type: string
+          minLength: 10
+          example: Dolor de cabeza persistente desde hace una semana
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AppointmentCreateBody:
+      type: object
+      required: [doctorId, fechaHora, motivo]
+      properties:
+        doctorId:
+          type: string
+          example: 64a1f2b3c4e5d6f7a8b9c0d2
+        fechaHora:
+          type: string
+          format: date-time
+          example: 2026-04-15T10:30:00.000Z
+        motivo:
+          type: string
+          minLength: 10
+          example: Dolor de cabeza persistente desde hace una semana
+        pacienteId:
+          type: string
+          description: Solo requerido si el solicitante es admin y crea la cita en nombre de otro paciente.
+          example: 64a1f2b3c4e5d6f7a8b9c0d1
+
+    AppointmentStatusBody:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          type: string
+          enum: [pendiente, confirmada, cancelada, completada]
+          example: confirmada
+
+  # ─────────────────────────────────────────────
+  # RESPONSES REUTILIZABLES
+  # ─────────────────────────────────────────────
+  responses:
+    Unauthorized:
+      description: No autenticado — token ausente, inválido o expirado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            tokenAusente:
+              value: { success: false, message: "Acceso denegado. Token no encontrado." }
+            tokenInvalido:
+              value: { success: false, message: "Token inválido." }
+            tokenExpirado:
+              value: { success: false, message: "Token expirado. Inicia sesión nuevamente." }
+
+    Forbidden:
+      description: Autorizado pero sin permisos suficientes para este recurso.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            sinRol:
+              value: { success: false, message: "Acceso prohibido. Se requiere uno de los roles: admin." }
+
+    NotFound:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ValidationError:
+      description: Error de validación en los campos del cuerpo.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+    Conflict:
+      description: Conflicto — ya existe un registro con ese valor único (ej. email duplicado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            emailDuplicado:
+              value: { success: false, message: "Ya existe un registro con ese email." }
+
+    ServerError:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────
+  # PARAMETERS REUTILIZABLES
+  # ─────────────────────────────────────────────
+  parameters:
+    pathId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID de MongoDB del recurso (24 caracteres hex).
+      example: 64a1f2b3c4e5d6f7a8b9c0d1
+
+    queryPage:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: Número de página para la paginación.
+
+    queryLimit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 10
+      description: Cantidad de resultados por página.
+
+# ─────────────────────────────────────────────
+# TAGS
+# ─────────────────────────────────────────────
+tags:
+  - name: Health
+    description: Estado de la API
+  - name: Auth
+    description: Registro, login, logout y perfil del usuario autenticado
+  - name: Users
+    description: Gestión de usuarios (requiere autenticación)
+  - name: Doctors
+    description: Gestión del perfil de médicos
+  - name: Appointments
+    description: Gestión de citas médicas (requiere autenticación)
+
+# ─────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────
+paths:
+
+  # ── HEALTH ──────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      summary: Verifica que la API está operativa
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API funcionando correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: MediQ API funcionando correctamente
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: 1.0.0
+
+  # ── AUTH ────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar un nuevo usuario
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBody'
+      responses:
+        '201':
+          description: Usuario creado. El JWT se establece en la cookie `token`.
+          headers:
+            Set-Cookie:
+              description: Cookie HTTP-only con el JWT.
+              schema:
+                type: string
+                example: token=eyJ...; HttpOnly; Path=/
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Recurso creado correctamente
+                  data:
+                    $ref: '#/components/schemas/UserPublic'
+        '400':
+          description: El email ya está registrado o los datos no pasan la validación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                emailDuplicado:
+                  value: { success: false, message: "El email ya está registrado" }
+                validacion:
+                  value:
+                    success: false
+                    message: Error de validación
+                    errors:
+                      - field: email
+                        message: Email inválido
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      responses:
+        '200':
+          description: Login exitoso. El JWT se establece en la cookie `token`.
+          headers:
+            Set-Cookie:
+              description: Cookie HTTP-only con el JWT.
+              schema:
+                type: string
+                example: token=eyJ...; HttpOnly; Path=/
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/UserPublic'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Credenciales inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                credencialesInvalidas:
+                  value: { success: false, message: "Credenciales inválidas" }
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Cerrar sesión (limpia la cookie JWT)
+      operationId: logout
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Sesión cerrada. La cookie `token` es eliminada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Sesión cerrada correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Obtener el perfil del usuario autenticado
+      operationId: getMe
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Datos del usuario autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/UserPublic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── USERS ───────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar todos los usuarios (solo admin)
+      operationId: getUsers
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/queryPage'
+        - $ref: '#/components/parameters/queryLimit'
+      responses:
+        '200':
+          description: Lista paginada de usuarios.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserPublic'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Obtener un usuario por ID (dueño o admin)
+      operationId: getUserById
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: Datos del usuario.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/UserPublic'
+        '400':
+          description: ID con formato inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                idInvalido:
+                  value: { success: false, message: "ID inválido: abc" }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags: [Users]
+      summary: Actualizar nombre y/o email de un usuario (dueño o admin)
+      operationId: updateUser
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateBody'
+      responses:
+        '200':
+          description: Usuario actualizado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/UserPublic'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [Users]
+      summary: Eliminar un usuario (solo admin)
+      operationId: deleteUser
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: Usuario eliminado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Usuario eliminado correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── DOCTORS ─────────────────────────────────
+  /doctors:
+    get:
+      tags: [Doctors]
+      summary: Listar médicos (público)
+      operationId: getDoctors
+      parameters:
+        - name: especialidad
+          in: query
+          schema:
+            type: string
+          description: Filtrar por especialidad médica.
+          example: Cardiología
+        - $ref: '#/components/parameters/queryPage'
+        - $ref: '#/components/parameters/queryLimit'
+      responses:
+        '200':
+          description: Lista paginada de médicos.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Doctor'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Doctors]
+      summary: Crear perfil de médico (solo admin)
+      operationId: createDoctor
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorCreateBody'
+      responses:
+        '201':
+          description: Médico creado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Recurso creado correctamente
+                  data:
+                    $ref: '#/components/schemas/Doctor'
+        '400':
+          description: El userId no existe o no tiene rol medico.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rolInvalido:
+                  value: { success: false, message: "El usuario debe tener rol medico" }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /doctors/{id}:
+    get:
+      tags: [Doctors]
+      summary: Obtener un médico por ID (público)
+      operationId: getDoctorById
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: Datos del médico.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Doctor'
+        '400':
+          description: ID con formato inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags: [Doctors]
+      summary: Actualizar datos de un médico (admin o el propio médico)
+      operationId: updateDoctor
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorUpdateBody'
+      responses:
+        '200':
+          description: Médico actualizado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Doctor'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [Doctors]
+      summary: Eliminar un médico (solo admin)
+      operationId: deleteDoctor
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: Médico eliminado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Médico eliminado correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── APPOINTMENTS ────────────────────────────
+  /appointments:
+    get:
+      tags: [Appointments]
+      summary: Listar citas filtradas según el rol del usuario autenticado
+      description: >
+        - **admin**: recibe todas las citas del sistema.
+        - **medico**: recibe solo las citas donde él es el doctor.
+        - **paciente**: recibe solo sus propias citas.
+      operationId: getAppointments
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/queryPage'
+        - $ref: '#/components/parameters/queryLimit'
+      responses:
+        '200':
+          description: Lista paginada de citas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Appointments]
+      summary: Crear una cita médica (paciente o admin)
+      description: >
+        Un **paciente** crea la cita para sí mismo — `pacienteId` se toma del JWT.
+        Un **admin** puede especificar un `pacienteId` distinto en el body.
+      operationId: createAppointment
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreateBody'
+      responses:
+        '201':
+          description: Cita creada correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Recurso creado correctamente
+                  data:
+                    $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Error de validación — motivo vacío, menor a 10 caracteres u otro campo requerido faltante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                motivoVacio:
+                  value: { success: false, message: "El motivo de la cita es obligatorio" }
+                motivoCorto:
+                  value: { success: false, message: "El motivo debe tener al menos 10 caracteres" }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /appointments/{id}:
+    get:
+      tags: [Appointments]
+      summary: Obtener una cita por ID
+      description: >
+        Un **paciente** solo puede ver sus propias citas.
+        Un **médico** o **admin** puede ver cualquier cita.
+      operationId: getAppointmentById
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: Datos de la cita.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: El paciente intenta acceder a una cita que no le pertenece.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                accesoDenegado:
+                  value: { success: false, message: "Acceso denegado" }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags: [Appointments]
+      summary: Eliminar una cita (usuario autenticado)
+      operationId: deleteAppointment
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: Cita eliminada correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Cita eliminada correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /appointments/{id}/status:
+    patch:
+      tags: [Appointments]
+      summary: Actualizar el estado de una cita (médico o admin)
+      description: >
+        Permite transicionar el estado de una cita:
+        pendiente → confirmada → completada / cancelada.
+      operationId: updateAppointmentStatus
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/pathId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentStatusBody'
+      responses:
+        '200':
+          description: Estado actualizado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/Appointment'
+        '400':
+          description: El valor de `estado` no pertenece al enum permitido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
