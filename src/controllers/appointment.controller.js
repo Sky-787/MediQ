@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 const { sendSuccess, sendCreated, sendPaginated } = require('../utils/response');
+const { validateMotivo } = require('../utils/validators');
 
 // GET /api/appointments
 const getAppointments = async (req, res, next) => {
@@ -60,17 +61,23 @@ const getAppointmentById = async (req, res, next) => {
 const createAppointment = async (req, res, next) => {
   try {
     const { doctorId, fechaHora, motivo } = req.body;
-    
+
+    // Validar motivo antes de persistir
+    const motivoValidation = validateMotivo(motivo);
+    if (!motivoValidation.valid) {
+      return res.status(400).json({ success: false, message: motivoValidation.message });
+    }
+
     let pacienteId = req.user.id;
     if (req.user.rol === 'admin' && req.body.pacienteId) {
-       pacienteId = req.body.pacienteId;
+      pacienteId = req.body.pacienteId;
     }
 
     const appointment = await Appointment.create({
       pacienteId,
       doctorId,
       fechaHora,
-      motivo
+      motivo: motivo.trim(),
     });
 
     sendCreated(res, appointment);

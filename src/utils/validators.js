@@ -16,4 +16,20 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-module.exports = { validateRequest };
+/**
+ * Valida el campo `motivo` de una cita.
+ * - No puede estar vacío o ausente.
+ * - Debe tener al menos 10 caracteres.
+ * Retorna un objeto { valid, message } para usarse en controladores.
+ */
+const validateMotivo = (motivo) => {
+  if (!motivo || typeof motivo !== 'string' || motivo.trim().length === 0) {
+    return { valid: false, message: 'El motivo de la cita es obligatorio' };
+  }
+  if (motivo.trim().length < 10) {
+    return { valid: false, message: 'El motivo debe tener al menos 10 caracteres' };
+  }
+  return { valid: true };
+};
+
+module.exports = { validateRequest, validateMotivo };
