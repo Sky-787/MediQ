@@ -7,6 +7,10 @@ const { CORS_ORIGIN, NODE_ENV } = require('./config/env');
 const routes = require('./routes');
 const { errorHandler, notFound } = require('./middlewares/error.middleware');
 
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
+
 const app = express();
 
 app.use(cors({
@@ -25,6 +29,10 @@ if (NODE_ENV !== 'test') {
 }
 
 app.use('/api', routes);
+
+// Swagger Schema Docs
+const swaggerDocument = YAML.load(path.join(__dirname, '../swagger-spec.yml'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get('/', (req, res) => {
   res.json({
