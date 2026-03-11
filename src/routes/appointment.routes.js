@@ -11,6 +11,6 @@ router.get('/', getAppointments);
 router.get('/:id', getAppointmentById);
 router.post('/', authorize('paciente', 'admin'), createAppointment);
 router.patch('/:id/status', authorize('medico', 'admin'), updateAppointmentStatus);
-router.delete('/:id', deleteAppointment);
+router.delete('/:id', authorize('admin'), deleteAppointment);
 
 module.exports = router;

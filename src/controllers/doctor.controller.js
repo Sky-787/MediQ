@@ -62,9 +62,15 @@ const createDoctor = async (req, res, next) => {
 // PUT /api/doctors/:id
 const updateDoctor = async (req, res, next) => {
   try {
+    const { especialidad, registroMedico, disponibilidad } = req.body;
+    const updateData = {};
+    if (especialidad !== undefined) updateData.especialidad = especialidad;
+    if (registroMedico !== undefined) updateData.registroMedico = registroMedico;
+    if (disponibilidad !== undefined) updateData.disponibilidad = disponibilidad;
+
     const doctor = await Doctor.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
