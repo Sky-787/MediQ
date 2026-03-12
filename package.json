@@ -1,6 +1,19 @@
 {
   "name": "mediq-backend",
   "version": "1.0.0",
+<<<<<<< HEAD
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3"
+=======
   "description": "Backend RESTful para el sistema de gestión de citas médicas MediQ",
   "main": "src/server.js",
   "scripts": {
@@ -35,5 +48,6 @@
   },
   "engines": {
     "node": ">=18.0.0"
+>>>>>>> 4e4fc1b3bfb1ee54491bc81e177a56b9c53e57fd
   }
 }
