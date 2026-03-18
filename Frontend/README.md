@@ -201,7 +201,7 @@ git push origin feature/mi-rama
 
 <!-- Persona D -->
 
-- [ ] Persona D - Maria Carrillo: _(pendiente)_
+- [x] Persona D - Maria Carrillo (2026-03-17): D-1 PatientLayout wrapper con Outlet y PatientNavbar con links de navegación, nombre de usuario y botón cerrar sesión (teal-700).
 
 <!-- Persona E -->
 
