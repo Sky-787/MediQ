@@ -28,7 +28,7 @@ export default function LoginPage() {
           navigate('/admin/dashboard');
           break;
         case 'medico':
-          navigate('/doctor/agenda');
+          navigate('/doctor');
           break;
         case 'paciente':
           navigate('/patient/search');

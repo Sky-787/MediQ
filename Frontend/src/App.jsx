@@ -13,6 +13,7 @@ import BookAppointmentPage from './pages/patient/BookAppointmentPage'
 import MyAppointmentsPage from './pages/patient/MyAppointmentsPage'
 
 // Páginas del médico
+import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage'
 import AgendaPage from './pages/doctor/AgendaPage'
 import AvailabilityPage from './pages/doctor/AvailabilityPage'
 import NotificationsPage from './pages/doctor/NotificationsPage'
@@ -51,6 +52,7 @@ export default function App() {
 
         {/* ── Rutas del Médico (solo rol 'medico') ── */}
         <Route element={<ProtectedRoute allowedRoles={['medico']} />}>
+          <Route path="/doctor" element={<DoctorDashboardPage />} /> {/* NUEVO */}
           <Route path="/doctor/agenda" element={<AgendaPage />} />
           <Route path="/doctor/availability" element={<AvailabilityPage />} />
           <Route path="/doctor/notifications" element={<NotificationsPage />} />
