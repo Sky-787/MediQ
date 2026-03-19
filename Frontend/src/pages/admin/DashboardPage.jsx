@@ -332,7 +332,7 @@ const DashboardPage = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"> */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Card de Citas hoy */}
           <div
             className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -404,8 +404,8 @@ const DashboardPage = () => {
                 <UserCog className="w-6 h-6 text-teal-700" />
               </div>
             </div>
-          </div>
-        </div> */}
+          </div> */}
+        </div>
 
         {/* Filters Section */}
         <CustomCard className="p-6 mb-8">
