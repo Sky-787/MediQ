@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
         const { data } = await axiosInstance.get('/auth/me')
         setUser(data)
         setIsAuthenticated(true)
-      } catch (err) {
+      } catch {
         // 401 u otro error → no hay sesión activa, no es un error de la app
         setUser(null)
         setIsAuthenticated(false)
@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await axiosInstance.post('/auth/logout')
-    } catch (_) {
+    } catch {
       // Ignorar errores de red en logout
     } finally {
       setUser(null)
