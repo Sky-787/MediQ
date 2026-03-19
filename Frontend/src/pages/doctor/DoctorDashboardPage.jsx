@@ -1,7 +1,7 @@
 // src/pages/doctor/DoctorDashboardPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Bell, Users, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Bell, Users, ChevronRight, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import useApi from '../../hooks/useApi';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -9,7 +9,7 @@ import CustomCard from '../../components/ui/CustomCard';
 
 const DoctorDashboardPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { fetchData, loading } = useApi();
   
   const [stats, setStats] = useState({
@@ -20,6 +20,15 @@ const DoctorDashboardPage = () => {
   });
 
   const [nextAppointments, setNextAppointments] = useState([]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -92,12 +101,23 @@ const DoctorDashboardPage = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Panel del Médico
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Bienvenido, Dr. {user?.nombre} · {user?.email}
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Panel del Médico
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Bienvenido, Dr. {user?.nombre} · {user?.email}
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Cerrar sesión</span>
+            </button>
+          </div>
         </div>
       </header>
 
