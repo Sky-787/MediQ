@@ -15,8 +15,16 @@ export function AuthProvider({ children }) {
     const checkSession = async () => {
       try {
         const { data } = await axiosInstance.get('/auth/me')
-        setUser(data)
-        setIsAuthenticated(true)
+        console.log('Respuesta de /auth/me:', data)
+        
+        // Extraer el usuario de data.data (estructura anidada)
+        if (data && data.data) {
+          setUser(data.data)
+          setIsAuthenticated(true)
+        } else {
+          setUser(null)
+          setIsAuthenticated(false)
+        }
       } catch (err) {
         // 401 u otro error → no hay sesión activa, no es un error de la app
         setUser(null)
@@ -39,8 +47,19 @@ export function AuthProvider({ children }) {
         email,
         contrasena: password,
       })
-      setUser(data)
-      setIsAuthenticated(true)
+      
+      console.log('Respuesta completa del login:', data)
+      
+      // Extraer el usuario de data.data (estructura anidada)
+      if (data && data.data) {
+        console.log('Usuario extraído:', data.data)
+        setUser(data.data)
+        setIsAuthenticated(true)
+      } else {
+        // Si no tiene la estructura esperada, intentar usar data directamente
+        setUser(data)
+        setIsAuthenticated(true)
+      }
     } catch (err) {
       const mensaje =
         err.response?.data?.message ||

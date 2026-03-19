@@ -8,7 +8,7 @@ import AuthFeedback from '../../components/ui/AuthFeedback';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, error, clearError, isAuthenticated, isPaciente, isMedico, isAdministrador } = useAuth();
+  const { login, error, clearError, user, isAuthenticated } = useAuth();
 
   const {
     register,
@@ -19,12 +19,25 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      if (isPaciente()) navigate('/patient/search');
-      else if (isMedico()) navigate('/doctor/agenda');
-      else if (isAdministrador()) navigate('/admin/dashboard');
+    // Verificar si está autenticado y tiene usuario
+    if (isAuthenticated && user) {
+      const role = user.rol; // Asumiendo que el rol está en user.rol
+      
+      switch (role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'medico':
+          navigate('/doctor/agenda');
+          break;
+        case 'paciente':
+          navigate('/patient/search');
+          break;
+        default:
+          console.log('Rol no reconocido:', role);
+      }
     }
-  }, [isAuthenticated, isPaciente, isMedico, isAdministrador, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const onSubmit = async (data) => {
     await login(data.email, data.contrasena);

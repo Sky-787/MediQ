@@ -16,22 +16,37 @@ import { useAuth } from '../../context/AuthContext'
 export default function ProtectedRoute({ allowedRoles }) {
   const { isAuthenticated, isLoading, user } = useAuth()
 
+  // 🔍 DEPURACIÓN
+  console.log('🔍 ProtectedRoute - allowedRoles:', allowedRoles);
+  console.log('🔍 ProtectedRoute - user:', user);
+  console.log('🔍 ProtectedRoute - user?.rol:', user?.rol);
+  console.log('🔍 ProtectedRoute - isAuthenticated:', isAuthenticated);
+  console.log('🔍 ProtectedRoute - isLoading:', isLoading);
+  
+  if (allowedRoles && user?.rol) {
+    console.log('🔍 ProtectedRoute - rol permitido?', allowedRoles.includes(user.rol));
+  }
+
   // 1. Esperando que AuthContext verifique la sesión con /auth/me
   if (isLoading) {
+    console.log('🔍 ProtectedRoute - MOSTRANDO LOADING');
     return <LoadingSpinnerFallback />
   }
 
   // 2. No autenticado → ir al login
   if (!isAuthenticated) {
+    console.log('🔍 ProtectedRoute - NO AUTENTICADO, redirigiendo a /login');
     return <Navigate to="/login" replace />
   }
 
   // 3. Rol no autorizado → ir al inicio
   if (allowedRoles && user?.rol && !allowedRoles.includes(user.rol)) {
+    console.log('🔍 ProtectedRoute - ROL NO AUTORIZADO, redirigiendo a /');
     return <Navigate to="/" replace />
   }
 
   // 4. Todo OK
+  console.log('🔍 ProtectedRoute - TODO OK, mostrando contenido');
   return <Outlet />
 }
 
