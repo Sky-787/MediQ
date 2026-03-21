@@ -304,7 +304,8 @@ const DashboardPage = () => {
                 Panel de Administración
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                Bienvenido, {user?.nombre} · {user?.email} ·{' '}
+                Bienvenido, {user?.nombre} ·
+                 {/* {user?.email} ·{' '} */}
                 <span className="font-semibold text-teal-700">
                   ({user?.rol})
                 </span>
@@ -340,7 +341,7 @@ const DashboardPage = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Citas hoy</p>
+                <p className="text-sm font-medium text-gray-600">Reportes</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
                   {stats.todayAppointments}
                 </p>
@@ -352,7 +353,7 @@ const DashboardPage = () => {
           </div>
 
           {/* Card de Médicos */}
-          <div className="bg-white rounded-lg shadow p-6">
+          {/* <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Médicos activos</p>
@@ -364,7 +365,7 @@ const DashboardPage = () => {
                 <Stethoscope className="w-6 h-6 text-blue-700" />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Card de Pacientes */}
           <div
@@ -373,7 +374,7 @@ const DashboardPage = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Pacientes</p>
+                <p className="text-sm font-medium text-gray-600">Total de usuarios</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
                   {stats.totalPatients}
                 </p>
