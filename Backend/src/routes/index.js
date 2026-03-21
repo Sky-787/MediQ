@@ -3,6 +3,7 @@ const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const doctorRoutes = require('./doctor.routes');
 const appointmentRoutes = require('./appointment.routes');
+const reportRoutes = require('./report.routes');
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/doctors', doctorRoutes);
 router.use('/appointments', appointmentRoutes);
+router.use('/reports', reportRoutes);
 
 module.exports = router;

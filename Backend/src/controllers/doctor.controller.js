@@ -2,7 +2,7 @@ const Doctor = require('../models/Doctor');
 const User = require('../models/User');
 const { sendSuccess, sendCreated, sendPaginated } = require('../utils/response');
 
-// GET /api/doctors
+// 1. getDoctors
 const getDoctors = async (req, res, next) => {
   try {
     const filtro = req.query.especialidad ? { especialidad: req.query.especialidad } : {};
@@ -12,7 +12,7 @@ const getDoctors = async (req, res, next) => {
 
     const [doctors, total] = await Promise.all([
       Doctor.find(filtro).populate('userId', 'nombre email').skip(skip).limit(limit),
-      Doctor.countDocuments(filtro),
+      Doctor.countDocuments(filtro)
     ]);
 
     sendPaginated(res, doctors, total, page, limit);
@@ -21,7 +21,7 @@ const getDoctors = async (req, res, next) => {
   }
 };
 
-// GET /api/doctors/:id
+// 2. getDoctorById
 const getDoctorById = async (req, res, next) => {
   try {
     const doctor = await Doctor.findById(req.params.id).populate('userId', 'nombre email');
@@ -36,22 +36,18 @@ const getDoctorById = async (req, res, next) => {
   }
 };
 
-// POST /api/doctors
+// 3. createDoctor (solo admin)
 const createDoctor = async (req, res, next) => {
   try {
     const { userId, especialidad, registroMedico, disponibilidad } = req.body;
 
     const user = await User.findById(userId);
+
     if (!user || user.rol !== 'medico') {
       return res.status(400).json({ success: false, message: 'El usuario debe tener rol medico' });
     }
 
-    const doctor = await Doctor.create({
-      userId,
-      especialidad,
-      registroMedico,
-      disponibilidad: disponibilidad || [],
-    });
+    const doctor = await Doctor.create({ userId, especialidad, registroMedico, disponibilidad: disponibilidad || [] });
 
     sendCreated(res, doctor);
   } catch (error) {
@@ -59,20 +55,10 @@ const createDoctor = async (req, res, next) => {
   }
 };
 
-// PUT /api/doctors/:id
+// 4. updateDoctor
 const updateDoctor = async (req, res, next) => {
   try {
-    const { especialidad, registroMedico, disponibilidad } = req.body;
-    const updateData = {};
-    if (especialidad !== undefined) updateData.especialidad = especialidad;
-    if (registroMedico !== undefined) updateData.registroMedico = registroMedico;
-    if (disponibilidad !== undefined) updateData.disponibilidad = disponibilidad;
-
-    const doctor = await Doctor.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
 
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Médico no encontrado' });
@@ -84,7 +70,7 @@ const updateDoctor = async (req, res, next) => {
   }
 };
 
-// DELETE /api/doctors/:id
+// 5. deleteDoctor (solo admin)
 const deleteDoctor = async (req, res, next) => {
   try {
     const doctor = await Doctor.findByIdAndDelete(req.params.id);
