@@ -1,0 +1,37 @@
+{
+	"info": {
+		"name": "MediQ API - Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{ "name": "register", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status code is 201', () => { pm.response.to.have.status(201); });"] } }], "request": { "method": "POST", "url": "{{baseUrl}}/auth/register" } },
+				{ "name": "login", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"] } }], "request": { "method": "POST", "url": "{{baseUrl}}/auth/login" } },
+				{ "name": "logout", "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" } },
+				{ "name": "perfil", "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" } }
+			]
+		},
+		{
+			"name": "Doctors",
+			"item": [
+				{ "name": "listar", "request": { "method": "GET", "url": "{{baseUrl}}/doctors" } },
+				{ "name": "detalle", "request": { "method": "GET", "url": "{{baseUrl}}/doctors/:id" } },
+				{ "name": "crear", "request": { "method": "POST", "url": "{{baseUrl}}/doctors" } },
+				{ "name": "actualizar", "request": { "method": "PUT", "url": "{{baseUrl}}/doctors/:id" } }
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{ "name": "crear", "request": { "method": "POST", "url": "{{baseUrl}}/appointments" } },
+				{ "name": "mis citas", "request": { "method": "GET", "url": "{{baseUrl}}/appointments" } },
+				{ "name": "cambiar estado", "request": { "method": "PATCH", "url": "{{baseUrl}}/appointments/:id" } }
+			]
+		}
+	],
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:5000/api" }
+	]
+}
