@@ -38,26 +38,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
-              },
-              "examples": {
-                "paciente": {
-                  "summary": "Registro de paciente",
-                  "value": {
-                    "nombre": "María Isabel Carrillo",
-                    "email": "maria@correo.com",
-                    "password": "Segura1234!",
-                    "rol": "Paciente"
-                  }
-                },
-                "medico": {
-                  "summary": "Registro de médico",
-                  "value": {
-                    "nombre": "Dr. Farid Semanate",
-                    "email": "farid@mediq.com",
-                    "password": "Doctor5678!",
-                    "rol": "Médico"
-                  }
-                }
               }
             }
           }
@@ -69,15 +49,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthResponse"
-                },
-                "example": {
-                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjBhYjEyMzQ1NiIsImVtYWlsIjoibWFyaWFAY29ycmVvLmNvbSIsIm5vbWJyZSI6Ik1hcsOtYSBJc2FiZWwiLCJyb2wiOiJQYWNpZW50ZSIsImlhdCI6MTcxMDAwMDAwMCwiZXhwIjoxNzEwMDI4ODAwfQ.ejemplo",
-                  "user": {
-                    "id": "660ab123456",
-                    "nombre": "María Isabel Carrillo",
-                    "email": "maria@correo.com",
-                    "rol": "Paciente"
-                  }
                 }
               }
             }
@@ -88,9 +59,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "message": "El email ya está registrado"
                 }
               }
             }
@@ -101,29 +69,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationErrorResponse"
-                },
-                "examples": {
-                  "email_invalido": {
-                    "summary": "Formato de email incorrecto",
-                    "value": {
-                      "message": "Datos inválidos",
-                      "errores": ["El formato del email no es válido"]
-                    }
-                  },
-                  "password_corta": {
-                    "summary": "Contraseña muy corta",
-                    "value": {
-                      "message": "Datos inválidos",
-                      "errores": ["La contraseña debe tener al menos 8 caracteres"]
-                    }
-                  },
-                  "rol_invalido": {
-                    "summary": "Rol no permitido",
-                    "value": {
-                      "message": "Datos inválidos",
-                      "errores": ["Rol no válido: SuperAdmin"]
-                    }
-                  }
                 }
               }
             }
@@ -134,9 +79,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "message": "Error interno del servidor. Intenta de nuevo más tarde."
                 }
               }
             }
@@ -156,22 +98,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
-              },
-              "examples": {
-                "login_paciente": {
-                  "summary": "Login de paciente",
-                  "value": {
-                    "email": "maria@correo.com",
-                    "password": "Segura1234!"
-                  }
-                },
-                "login_admin": {
-                  "summary": "Login de administrador",
-                  "value": {
-                    "email": "admin@mediq.com",
-                    "password": "Admin9999!"
-                  }
-                }
               }
             }
           }
@@ -183,15 +109,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthResponse"
-                },
-                "example": {
-                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjBhYjEyMzQ1NiIsImVtYWlsIjoibWFyaWFAY29ycmVvLmNvbSIsIm5vbWJyZSI6Ik1hcsOtYSBJc2FiZWwiLCJyb2wiOiJQYWNpZW50ZSIsImlhdCI6MTcxMDAwMDAwMCwiZXhwIjoxNzEwMDI4ODAwfQ.ejemplo",
-                  "user": {
-                    "id": "660ab123456",
-                    "nombre": "María Isabel Carrillo",
-                    "email": "maria@correo.com",
-                    "rol": "Paciente"
-                  }
                 }
               }
             }
@@ -202,9 +119,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "message": "Email y contraseña son obligatorios"
                 }
               }
             }
@@ -215,9 +129,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "message": "Credenciales inválidas"
                 }
               }
             }
@@ -228,9 +139,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "message": "Error interno del servidor. Intenta de nuevo más tarde."
                 }
               }
             }
@@ -306,7 +214,7 @@
         "type": "object",
         "description": "Datos públicos del usuario. Nunca incluye el hash de la contraseña.",
         "properties": {
-          "id": {
+          "_id": {
             "type": "string",
             "description": "ID de MongoDB (_id)",
             "example": "660ab123456def789"

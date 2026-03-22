@@ -31,7 +31,6 @@ components:
   # SCHEMAS
   # ─────────────────────────────────────────────
   schemas:
-
     # ── Primitivos de respuesta ──────────────────
     SuccessResponse:
       type: object
@@ -278,61 +277,78 @@ components:
   # ─────────────────────────────────────────────
   # RESPONSES REUTILIZABLES
   # ─────────────────────────────────────────────
-  responses:
-    Unauthorized:
-      description: No autenticado — token ausente, inválido o expirado.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            tokenAusente:
-              value: { success: false, message: "Acceso denegado. Token no encontrado." }
-            tokenInvalido:
-              value: { success: false, message: "Token inválido." }
-            tokenExpirado:
-              value: { success: false, message: "Token expirado. Inicia sesión nuevamente." }
+  components:
+    responses:
+      Unauthorized:
+        description: No autenticado — token ausente, inválido o expirado.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              tokenAusente:
+                value:
+                  {
+                    success: false,
+                    message: 'Acceso denegado. Token no encontrado.',
+                  }
+              tokenInvalido:
+                value: { success: false, message: 'Token inválido.' }
+              tokenExpirado:
+                value:
+                  {
+                    success: false,
+                    message: 'Token expirado. Inicia sesión nuevamente.',
+                  }
 
-    Forbidden:
-      description: Autorizado pero sin permisos suficientes para este recurso.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            sinRol:
-              value: { success: false, message: "Acceso prohibido. Se requiere uno de los roles: admin." }
+      Forbidden:
+        description: Autorizado pero sin permisos suficientes para este recurso.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              sinRol:
+                value:
+                  {
+                    success: false,
+                    message: 'Acceso prohibido. Se requiere uno de los roles: admin.',
+                  }
 
-    NotFound:
-      description: El recurso solicitado no existe.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+      NotFound:
+        description: El recurso solicitado no existe.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-    ValidationError:
-      description: Error de validación en los campos del cuerpo.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ValidationErrorResponse'
+      ValidationError:
+        description: Error de validación en los campos del cuerpo.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationErrorResponse'
 
-    Conflict:
-      description: Conflicto — ya existe un registro con ese valor único (ej. email duplicado).
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            emailDuplicado:
-              value: { success: false, message: "Ya existe un registro con ese email." }
+      Conflict:
+        description: Conflicto — ya existe un registro con ese valor único (ej. email duplicado).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              emailDuplicado:
+                value:
+                  {
+                    success: false,
+                    message: 'Ya existe un registro con ese email.',
+                  }
 
-    ServerError:
-      description: Error interno del servidor.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+      ServerError: # <--- AHORA SÍ, al mismo nivel que Conflict
+        description: Error interno del servidor.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
   # ─────────────────────────────────────────────
   # PARAMETERS REUTILIZABLES
@@ -382,7 +398,6 @@ tags:
 # PATHS
 # ─────────────────────────────────────────────
 paths:
-
   # ── HEALTH ──────────────────────────────────
   /health:
     get:
@@ -452,7 +467,8 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
               examples:
                 emailDuplicado:
-                  value: { success: false, message: "El email ya está registrado" }
+                  value:
+                    { success: false, message: 'El email ya está registrado' }
                 validacion:
                   value:
                     success: false
@@ -506,7 +522,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 credencialesInvalidas:
-                  value: { success: false, message: "Credenciales inválidas" }
+                  value: { success: false, message: 'Credenciales inválidas' }
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -632,7 +648,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 idInvalido:
-                  value: { success: false, message: "ID inválido: abc" }
+                  value: { success: false, message: 'ID inválido: abc' }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -787,7 +803,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 rolInvalido:
-                  value: { success: false, message: "El usuario debe tener rol medico" }
+                  value:
+                    {
+                      success: false,
+                      message: 'El usuario debe tener rol medico',
+                    }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -979,9 +999,17 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 motivoVacio:
-                  value: { success: false, message: "El motivo de la cita es obligatorio" }
+                  value:
+                    {
+                      success: false,
+                      message: 'El motivo de la cita es obligatorio',
+                    }
                 motivoCorto:
-                  value: { success: false, message: "El motivo debe tener al menos 10 caracteres" }
+                  value:
+                    {
+                      success: false,
+                      message: 'El motivo debe tener al menos 10 caracteres',
+                    }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1027,7 +1055,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 accesoDenegado:
-                  value: { success: false, message: "Acceso denegado" }
+                  value: { success: false, message: 'Acceso denegado' }
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
