@@ -31,6 +31,7 @@ components:
   # SCHEMAS
   # ─────────────────────────────────────────────
   schemas:
+
     # ── Primitivos de respuesta ──────────────────
     SuccessResponse:
       type: object
@@ -277,78 +278,61 @@ components:
   # ─────────────────────────────────────────────
   # RESPONSES REUTILIZABLES
   # ─────────────────────────────────────────────
-  components:
-    responses:
-      Unauthorized:
-        description: No autenticado — token ausente, inválido o expirado.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-            examples:
-              tokenAusente:
-                value:
-                  {
-                    success: false,
-                    message: 'Acceso denegado. Token no encontrado.',
-                  }
-              tokenInvalido:
-                value: { success: false, message: 'Token inválido.' }
-              tokenExpirado:
-                value:
-                  {
-                    success: false,
-                    message: 'Token expirado. Inicia sesión nuevamente.',
-                  }
+  responses:
+    Unauthorized:
+      description: No autenticado — token ausente, inválido o expirado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            tokenAusente:
+              value: { success: false, message: "Acceso denegado. Token no encontrado." }
+            tokenInvalido:
+              value: { success: false, message: "Token inválido." }
+            tokenExpirado:
+              value: { success: false, message: "Token expirado. Inicia sesión nuevamente." }
 
-      Forbidden:
-        description: Autorizado pero sin permisos suficientes para este recurso.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-            examples:
-              sinRol:
-                value:
-                  {
-                    success: false,
-                    message: 'Acceso prohibido. Se requiere uno de los roles: admin.',
-                  }
+    Forbidden:
+      description: Autorizado pero sin permisos suficientes para este recurso.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            sinRol:
+              value: { success: false, message: "Acceso prohibido. Se requiere uno de los roles: admin." }
 
-      NotFound:
-        description: El recurso solicitado no existe.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
-      ValidationError:
-        description: Error de validación en los campos del cuerpo.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ValidationErrorResponse'
+    ValidationError:
+      description: Error de validación en los campos del cuerpo.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
 
-      Conflict:
-        description: Conflicto — ya existe un registro con ese valor único (ej. email duplicado).
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-            examples:
-              emailDuplicado:
-                value:
-                  {
-                    success: false,
-                    message: 'Ya existe un registro con ese email.',
-                  }
+    Conflict:
+      description: Conflicto — ya existe un registro con ese valor único (ej. email duplicado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            emailDuplicado:
+              value: { success: false, message: "Ya existe un registro con ese email." }
 
-      ServerError: # <--- AHORA SÍ, al mismo nivel que Conflict
-        description: Error interno del servidor.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+    ServerError:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
   # ─────────────────────────────────────────────
   # PARAMETERS REUTILIZABLES
@@ -393,13 +377,131 @@ tags:
     description: Gestión del perfil de médicos
   - name: Appointments
     description: Gestión de citas médicas (requiere autenticación)
-  - name: Reports
-    description: Generación de reportes y estadísticas (ocupación, especialidades, períodos)
+  - name: Reports          
+    description: Reportes estadísticos (solo admin)
 
 # ─────────────────────────────────────────────
 # PATHS
 # ─────────────────────────────────────────────
 paths:
+  # ── REPORTS ───────────────────────────────────
+  /reports/ocupacion:
+    get:
+      tags: [Reports]
+      summary: Reporte de ocupación por médico
+      operationId: getOcupacion
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de médicos con total de citas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        doctorId:
+                          type: string
+                        nombre:
+                          type: string
+                        especialidad:
+                          type: string
+                        totalCitas:
+                          type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/especialidades:
+    get:
+      tags: [Reports]
+      summary: Reporte de citas por especialidad
+      operationId: getByEspecialidad
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de especialidades con total de citas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        especialidad:
+                          type: string
+                        total:
+                          type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/periodo:
+    get:
+      tags: [Reports]
+      summary: Reporte de citas por período
+      operationId: getByPeriodo
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Fecha de inicio (YYYY-MM-DD)
+        - name: fin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Fecha de fin (YYYY-MM-DD)
+        - $ref: '#/components/parameters/queryPage'
+        - $ref: '#/components/parameters/queryLimit'
+      responses:
+        '200':
+          description: Lista paginada de citas en el período
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          description: Faltan parámetros o formato inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   # ── HEALTH ──────────────────────────────────
   /health:
     get:
@@ -469,8 +571,7 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
               examples:
                 emailDuplicado:
-                  value:
-                    { success: false, message: 'El email ya está registrado' }
+                  value: { success: false, message: "El email ya está registrado" }
                 validacion:
                   value:
                     success: false
@@ -524,7 +625,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 credencialesInvalidas:
-                  value: { success: false, message: 'Credenciales inválidas' }
+                  value: { success: false, message: "Credenciales inválidas" }
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -650,7 +751,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 idInvalido:
-                  value: { success: false, message: 'ID inválido: abc' }
+                  value: { success: false, message: "ID inválido: abc" }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -805,11 +906,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 rolInvalido:
-                  value:
-                    {
-                      success: false,
-                      message: 'El usuario debe tener rol medico',
-                    }
+                  value: { success: false, message: "El usuario debe tener rol medico" }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1001,17 +1098,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 motivoVacio:
-                  value:
-                    {
-                      success: false,
-                      message: 'El motivo de la cita es obligatorio',
-                    }
+                  value: { success: false, message: "El motivo de la cita es obligatorio" }
                 motivoCorto:
-                  value:
-                    {
-                      success: false,
-                      message: 'El motivo debe tener al menos 10 caracteres',
-                    }
+                  value: { success: false, message: "El motivo debe tener al menos 10 caracteres" }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1057,7 +1146,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 accesoDenegado:
-                  value: { success: false, message: 'Acceso denegado' }
+                  value: { success: false, message: "Acceso denegado" }
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1138,109 +1227,5 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  # ── REPORTS ─────────────────────────────────
-  /reports/ocupacion:
-    get:
-      tags: [Reports]
-      summary: Obtener reporte de ocupación
-      description: Devuelve el total de citas agrupadas por médico.
-      operationId: getOcupacion
-      responses:
-        '200':
-          description: Datos del reporte de ocupación.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        _id:
-                          type: string
-                          description: ID del médico (o null si falta)
-                        totalCitas:
-                          type: integer
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /reports/especialidades:
-    get:
-      tags: [Reports]
-      summary: Obtener reporte de citas por especialidad
-      description: Devuelve el número total de citas agrupadas por la especialidad del médico.
-      operationId: getByEspecialidad
-      responses:
-        '200':
-          description: Datos del reporte por especialidades.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        _id:
-                          type: string
-                          description: Especialidad médica
-                        total:
-                          type: integer
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /reports/periodo:
-    get:
-      tags: [Reports]
-      summary: Obtener reporte de citas por período
-      description: Devuelve las citas filtradas en un rango de fechas indicadas en los parámetros de búsqueda.
-      operationId: getByPeriodo
-      parameters:
-        - name: inicio
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-          description: Fecha de inicio del período (ej. 2024-01-01)
-        - name: fin
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-          description: Fecha de fin del período (ej. 2024-12-31)
-        - $ref: '#/components/parameters/queryPage'
-        - $ref: '#/components/parameters/queryLimit'
-      responses:
-        '200':
-          description: Lista paginada de citas en el período.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Appointment'
-                  pagination:
-                    $ref: '#/components/schemas/PaginationMeta'
         '500':
           $ref: '#/components/responses/ServerError'
