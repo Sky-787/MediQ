@@ -393,6 +393,8 @@ tags:
     description: Gestión del perfil de médicos
   - name: Appointments
     description: Gestión de citas médicas (requiere autenticación)
+  - name: Reports
+    description: Generación de reportes y estadísticas (ocupación, especialidades, períodos)
 
 # ─────────────────────────────────────────────
 # PATHS
@@ -1136,5 +1138,109 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ── REPORTS ─────────────────────────────────
+  /reports/ocupacion:
+    get:
+      tags: [Reports]
+      summary: Obtener reporte de ocupación
+      description: Devuelve el total de citas agrupadas por médico.
+      operationId: getOcupacion
+      responses:
+        '200':
+          description: Datos del reporte de ocupación.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: ID del médico (o null si falta)
+                        totalCitas:
+                          type: integer
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /reports/especialidades:
+    get:
+      tags: [Reports]
+      summary: Obtener reporte de citas por especialidad
+      description: Devuelve el número total de citas agrupadas por la especialidad del médico.
+      operationId: getByEspecialidad
+      responses:
+        '200':
+          description: Datos del reporte por especialidades.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: Especialidad médica
+                        total:
+                          type: integer
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /reports/periodo:
+    get:
+      tags: [Reports]
+      summary: Obtener reporte de citas por período
+      description: Devuelve las citas filtradas en un rango de fechas indicadas en los parámetros de búsqueda.
+      operationId: getByPeriodo
+      parameters:
+        - name: inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Fecha de inicio del período (ej. 2024-01-01)
+        - name: fin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Fecha de fin del período (ej. 2024-12-31)
+        - $ref: '#/components/parameters/queryPage'
+        - $ref: '#/components/parameters/queryLimit'
+      responses:
+        '200':
+          description: Lista paginada de citas en el período.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
         '500':
           $ref: '#/components/responses/ServerError'
