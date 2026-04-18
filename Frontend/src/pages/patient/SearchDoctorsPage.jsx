@@ -1,8 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut } from 'lucide-react'; // Importamos LogOut
+import { User, LogOut } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
-import { useAuth } from '../../context/AuthContext'; // Importamos useAuth
+import useAuthStore from '../../stores/useAuthStore';
 
 // ── AvailabilityGrid ──────────────────────────────────────────────
 function AvailabilityGrid({ doctor, onClose }) {
@@ -12,7 +12,6 @@ function AvailabilityGrid({ doctor, onClose }) {
   useEffect(() => {
     axiosInstance.get(`/doctors/${doctor._id}`)
       .then(res => {
-        // Asegurar que slots sea un array
         const slotsData = res.data?.slots || [];
         setSlots(Array.isArray(slotsData) ? slotsData : []);
       })
@@ -45,10 +44,7 @@ function AvailabilityGrid({ doctor, onClose }) {
             ))}
           </div>
         )}
-        <button
-          onClick={onClose}
-          className="mt-4 text-sm text-gray-500 hover:underline"
-        >
+        <button onClick={onClose} className="mt-4 text-sm text-gray-500 hover:underline">
           Cerrar
         </button>
       </div>
@@ -58,18 +54,13 @@ function AvailabilityGrid({ doctor, onClose }) {
 
 // ── DoctorCard ────────────────────────────────────────────────────
 function DoctorCard({ doctor, onVerDisponibilidad }) {
-  // Asegurar que slots sea un array
   const slots = Array.isArray(doctor.slots) ? doctor.slots : [];
-  
+
   return (
     <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-2">
       <div className="flex items-center gap-3">
         {doctor.foto ? (
-          <img
-            src={doctor.foto}
-            alt={doctor.nombre}
-            className="w-12 h-12 rounded-full object-cover"
-          />
+          <img src={doctor.foto} alt={doctor.nombre} className="w-12 h-12 rounded-full object-cover" />
         ) : (
           <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
             <User className="text-teal-600" size={24} />
@@ -81,18 +72,13 @@ function DoctorCard({ doctor, onVerDisponibilidad }) {
         </div>
       </div>
       <div className="flex flex-wrap gap-1">
-        {slots.slice(0, 3).map((slot, i) => ( // Mostrar solo primeros 3 slots
-          <span
-            key={i}
-            className="bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-full"
-          >
+        {slots.slice(0, 3).map((slot, i) => (
+          <span key={i} className="bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-full">
             {slot.fechaHora || slot}
           </span>
         ))}
         {slots.length > 3 && (
-          <span className="text-xs text-gray-500 px-2 py-1">
-            +{slots.length - 3} más
-          </span>
+          <span className="text-xs text-gray-500 px-2 py-1">+{slots.length - 3} más</span>
         )}
       </div>
       <button
@@ -108,8 +94,8 @@ function DoctorCard({ doctor, onVerDisponibilidad }) {
 // ── SearchDoctorsPage ─────────────────────────────────────────────
 export default function SearchDoctorsPage() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // Obtener usuario y función logout
-  
+  const { user, logout } = useAuthStore();
+
   const [especialidad, setEspecialidad] = useState('');
   const [fecha, setFecha] = useState('');
   const [doctors, setDoctors] = useState([]);
@@ -121,15 +107,13 @@ export default function SearchDoctorsPage() {
     const fetchDoctors = async () => {
       setLoading(true);
       setError(null);
-      
       try {
         const params = {};
         if (especialidad) params.especialidad = especialidad;
         if (fecha) params.fecha = fecha;
 
         const res = await axiosInstance.get('/doctors', { params });
-        
-        // Manejar diferentes estructuras de respuesta
+
         let doctorsData = [];
         if (Array.isArray(res.data)) {
           doctorsData = res.data;
@@ -138,7 +122,7 @@ export default function SearchDoctorsPage() {
         } else if (res.data?.doctors && Array.isArray(res.data.doctors)) {
           doctorsData = res.data.doctors;
         }
-        
+
         setDoctors(doctorsData);
       } catch (err) {
         console.error('Error fetching doctors:', err);
@@ -152,14 +136,9 @@ export default function SearchDoctorsPage() {
     fetchDoctors();
   }, [especialidad, fecha]);
 
-  // Función para manejar el cierre de sesión
   const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
+    await logout();
+    navigate('/');
   };
 
   if (loading) {
@@ -175,18 +154,13 @@ export default function SearchDoctorsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
-      {/* Header con información del usuario y botón de logout */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Buscar Médico</h2>
-        
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">
-            {user?.nombre} ({user?.rol})
-          </span>
+          <span className="text-sm text-gray-600">{user?.nombre} ({user?.rol})</span>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Cerrar sesión</span>
@@ -194,7 +168,6 @@ export default function SearchDoctorsPage() {
         </div>
       </div>
 
-      {/* FilterBar */}
       <div className="flex gap-4 mb-6">
         <input
           type="text"
@@ -211,36 +184,20 @@ export default function SearchDoctorsPage() {
         />
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
-          {error}
-        </div>
-      )}
+      {error && <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
 
-      {/* DoctorList */}
       {doctors.length === 0 ? (
-        <div className="text-center text-gray-500 py-12">
-          No se encontraron médicos.
-        </div>
+        <div className="text-center text-gray-500 py-12">No se encontraron médicos.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {doctors.map(doc => (
-            <DoctorCard
-              key={doc._id}
-              doctor={doc}
-              onVerDisponibilidad={setSelectedDoctor}
-            />
+            <DoctorCard key={doc._id} doctor={doc} onVerDisponibilidad={setSelectedDoctor} />
           ))}
         </div>
       )}
 
-      {/* AvailabilityGrid modal */}
       {selectedDoctor && (
-        <AvailabilityGrid
-          doctor={selectedDoctor}
-          onClose={() => setSelectedDoctor(null)}
-        />
+        <AvailabilityGrid doctor={selectedDoctor} onClose={() => setSelectedDoctor(null)} />
       )}
     </div>
   );

@@ -1,17 +1,23 @@
 // src/components/ui/DoctorNavbar.jsx
-import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Bell, LogOut } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import useAuthStore from '../../stores/useAuthStore';
 
 const DoctorNavbar = () => {
-  const { logout } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(3); // Simulado, luego conectar a API
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+  const [unreadCount] = useState(3); // Simulado, luego conectar a API
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   const navItems = [
-    { path: '/doctor/agenda', label: 'Agenda', icon: Calendar },
-    { path: '/doctor/availability', label: 'Disponibilidad', icon: Clock },
-    { path: '/doctor/notifications', label: 'Notificaciones', icon: Bell },
+    { path: '/doctor/agenda',        label: 'Agenda',          icon: Calendar },
+    { path: '/doctor/availability',  label: 'Disponibilidad',  icon: Clock },
+    { path: '/doctor/notifications', label: 'Notificaciones',  icon: Bell },
   ];
 
   return (
@@ -45,7 +51,7 @@ const DoctorNavbar = () => {
             </div>
           </div>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
