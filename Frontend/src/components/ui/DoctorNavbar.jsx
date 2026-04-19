@@ -1,12 +1,12 @@
 // src/components/ui/DoctorNavbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Calendar, Clock, Bell, LogOut } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const DoctorNavbar = () => {
-  const { logout } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(3); // Simulado, luego conectar a API
+  const { logout } = useAuthStore();
+  const [unreadCount] = useState(3); // Simulado, luego conectar a API
 
   const navItems = [
     { path: '/doctor/agenda', label: 'Agenda', icon: Calendar },

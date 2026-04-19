@@ -3,12 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginSchema } from '../../utils/validationSchemas';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../stores/useAuthStore';
 import AuthFeedback from '../../components/ui/AuthFeedback';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, error, clearError, user, isAuthenticated } = useAuth();
+  const { login, error, clearError, user, isAuthenticated } = useAuthStore();
 
   const {
     register,
@@ -19,10 +19,8 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    // Verificar si está autenticado y tiene usuario
     if (isAuthenticated && user) {
-      const role = user.rol; // Asumiendo que el rol está en user.rol
-      
+      const role = user.rol;
       switch (role) {
         case 'admin':
           navigate('/admin/dashboard');
