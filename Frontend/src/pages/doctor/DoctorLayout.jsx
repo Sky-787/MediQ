@@ -2,10 +2,10 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import DoctorNavbar from '../../components/ui/DoctorNavbar';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const DoctorLayout = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return (
     <div className="min-h-screen bg-gray-50">
