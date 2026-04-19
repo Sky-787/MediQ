@@ -1,0 +1,372 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MediQ – API de Autenticación",
+    "description": "Documentación de los endpoints de autenticación del Sistema de Agendamiento Médico MediQ. Gestiona registro, login y control de acceso por roles mediante JWT.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Equipo MediQ",
+      "email": "mediq@universidad.edu.co"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor de desarrollo local"
+    },
+    {
+      "url": "https://api.mediq.com",
+      "description": "Servidor de producción"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Autenticación",
+      "description": "Endpoints para registro e inicio de sesión de usuarios"
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Registrar un nuevo usuario",
+        "description": "Crea una nueva cuenta en el sistema. La contraseña se hashea automáticamente con bcryptjs antes de almacenarse. Si el registro es exitoso, retorna un JWT listo para usar.",
+        "operationId": "registerUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "examples": {
+                "paciente": {
+                  "summary": "Registro de paciente",
+                  "value": {
+                    "nombre": "María Isabel Carrillo",
+                    "email": "maria@correo.com",
+                    "password": "Segura1234!",
+                    "rol": "Paciente"
+                  }
+                },
+                "medico": {
+                  "summary": "Registro de médico",
+                  "value": {
+                    "nombre": "Dr. Farid Semanate",
+                    "email": "farid@mediq.com",
+                    "password": "Doctor5678!",
+                    "rol": "Médico"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjBhYjEyMzQ1NiIsImVtYWlsIjoibWFyaWFAY29ycmVvLmNvbSIsIm5vbWJyZSI6Ik1hcsOtYSBJc2FiZWwiLCJyb2wiOiJQYWNpZW50ZSIsImlhdCI6MTcxMDAwMDAwMCwiZXhwIjoxNzEwMDI4ODAwfQ.ejemplo",
+                  "user": {
+                    "id": "660ab123456",
+                    "nombre": "María Isabel Carrillo",
+                    "email": "maria@correo.com",
+                    "rol": "Paciente"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El email ya está registrado en el sistema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "El email ya está registrado"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada inválidos (validación de Mongoose)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "examples": {
+                  "email_invalido": {
+                    "summary": "Formato de email incorrecto",
+                    "value": {
+                      "message": "Datos inválidos",
+                      "errores": ["El formato del email no es válido"]
+                    }
+                  },
+                  "password_corta": {
+                    "summary": "Contraseña muy corta",
+                    "value": {
+                      "message": "Datos inválidos",
+                      "errores": ["La contraseña debe tener al menos 8 caracteres"]
+                    }
+                  },
+                  "rol_invalido": {
+                    "summary": "Rol no permitido",
+                    "value": {
+                      "message": "Datos inválidos",
+                      "errores": ["Rol no válido: SuperAdmin"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error interno del servidor. Intenta de nuevo más tarde."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Iniciar sesión",
+        "description": "Autentica a un usuario con email y contraseña. Compara la contraseña con el hash almacenado usando bcryptjs. Si las credenciales son correctas, retorna un JWT firmado con los datos del usuario y su rol.",
+        "operationId": "loginUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "examples": {
+                "login_paciente": {
+                  "summary": "Login de paciente",
+                  "value": {
+                    "email": "maria@correo.com",
+                    "password": "Segura1234!"
+                  }
+                },
+                "login_admin": {
+                  "summary": "Login de administrador",
+                  "value": {
+                    "email": "admin@mediq.com",
+                    "password": "Admin9999!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login exitoso. Retorna JWT y datos públicos del usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjBhYjEyMzQ1NiIsImVtYWlsIjoibWFyaWFAY29ycmVvLmNvbSIsIm5vbWJyZSI6Ik1hcsOtYSBJc2FiZWwiLCJyb2wiOiJQYWNpZW50ZSIsImlhdCI6MTcxMDAwMDAwMCwiZXhwIjoxNzEwMDI4ODAwfQ.ejemplo",
+                  "user": {
+                    "id": "660ab123456",
+                    "nombre": "María Isabel Carrillo",
+                    "email": "maria@correo.com",
+                    "rol": "Paciente"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Faltan campos obligatorios en el body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Email y contraseña son obligatorios"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales incorrectas (email no existe o contraseña incorrecta). El mensaje es genérico intencionalmente para no revelar qué campo falló.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Credenciales inválidas"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error interno del servidor. Intenta de nuevo más tarde."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["nombre", "email", "password"],
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Nombre completo del usuario",
+            "example": "María Isabel Carrillo"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email único del usuario. Se almacena en minúsculas.",
+            "example": "maria@correo.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Contraseña en texto plano. El servidor la hashea con bcryptjs (salt 12) antes de guardarla.",
+            "example": "Segura1234!"
+          },
+          "rol": {
+            "type": "string",
+            "enum": ["Paciente", "Médico", "Administrador"],
+            "default": "Paciente",
+            "description": "Rol del usuario en el sistema. Si no se envía, se asigna 'Paciente' por defecto.",
+            "example": "Paciente"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email registrado del usuario",
+            "example": "maria@correo.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "Contraseña en texto plano. Se compara con el hash usando bcrypt.compare().",
+            "example": "Segura1234!"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT firmado con HS256. El payload contiene: sub (id), email, nombre, rol, iat y exp. Expira en 8h por defecto (configurable via JWT_EXPIRES_IN en .env).",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "user": {
+            "$ref": "#/components/schemas/PublicUser"
+          }
+        }
+      },
+      "PublicUser": {
+        "type": "object",
+        "description": "Datos públicos del usuario. Nunca incluye el hash de la contraseña.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID de MongoDB (_id)",
+            "example": "660ab123456def789"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "María Isabel Carrillo"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "maria@correo.com"
+          },
+          "rol": {
+            "type": "string",
+            "enum": ["Paciente", "Médico", "Administrador"],
+            "example": "Paciente"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Descripción legible del error",
+            "example": "Credenciales inválidas"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Datos inválidos"
+          },
+          "errores": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lista de mensajes de error de validación de Mongoose",
+            "example": ["El formato del email no es válido", "La contraseña debe tener al menos 8 caracteres"]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT obtenido en /api/auth/login. Incluirlo en el header: Authorization: Bearer <token>"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}
