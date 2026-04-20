@@ -30,7 +30,7 @@ export default function ProtectedRoute({ allowedRoles }) {
   }
 
   // 3. Rol no autorizado → ir al inicio
-  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user?.rol)) {
+  if (allowedRoles && user?.rol && !allowedRoles.includes(user.rol)) {
     return <Navigate to="/" replace />
   }
 

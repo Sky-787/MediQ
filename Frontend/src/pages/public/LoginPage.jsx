@@ -6,19 +6,6 @@ import { loginSchema } from '../../utils/validationSchemas';
 import { useAuthStore } from '../../stores/useAuthStore';
 import AuthFeedback from '../../components/ui/AuthFeedback';
 
-function getRouteByRole(role) {
-  switch (role) {
-    case 'admin':
-      return '/admin/dashboard';
-    case 'medico':
-      return '/doctor';
-    case 'paciente':
-      return '/patient/search';
-    default:
-      return '/';
-  }
-}
-
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, error, clearError, user, isAuthenticated } = useAuthStore();
@@ -32,8 +19,21 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (isAuthenticated && user?.rol) {
-      navigate(getRouteByRole(user.rol), { replace: true });
+    if (isAuthenticated && user) {
+      const role = user.rol;
+      switch (role) {
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'medico':
+          navigate('/doctor');
+          break;
+        case 'paciente':
+          navigate('/patient/search');
+          break;
+        default:
+          console.log('Rol no reconocido:', role);
+      }
     }
   }, [isAuthenticated, user, navigate]);
 

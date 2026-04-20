@@ -1,17 +1,11 @@
 // src/components/ui/AdminNavbar.jsx
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, BarChart3, Users, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 
 const AdminNavbar = () => {
   const { logout } = useAuthStore();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
 
   const navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -45,7 +39,7 @@ const AdminNavbar = () => {
             </div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
