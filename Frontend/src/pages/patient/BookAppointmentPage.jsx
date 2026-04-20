@@ -1,7 +1,9 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
+import useAppointmentStore from '../../stores/useAppointmentStore';
+import ToastNotification from '../../components/shared/ToastNotification';
 
 // ── ConfirmModal ──────────────────────────────────────────────────
 function ConfirmModal({ doctor, fechaHora, motivo, onCancel, onConfirm, loading, error }) {
@@ -43,10 +45,11 @@ export default function BookAppointmentPage() {
   const [selectedSlot, setSelectedSlot] = useState(state?.slot || null);
   const [motivo, setMotivo] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [slots, setSlots] = useState([]);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
+  const { createAppointment, isLoading, error } = useAppointmentStore();
 
   useEffect(() => {
     axiosInstance.get(`/doctors/${doctorId}`)
@@ -58,10 +61,8 @@ export default function BookAppointmentPage() {
   }, [doctorId]);
 
   const handleConfirm = async () => {
-    setLoading(true);
-    setError('');
     try {
-      await axiosInstance.post('/appointments', {
+      await createAppointment({
         doctorId,
         fechaHora: selectedSlot?.fechaHora || selectedSlot,
         motivo,
@@ -69,9 +70,7 @@ export default function BookAppointmentPage() {
       setSuccess(true);
       setShowModal(false);
     } catch {
-      setError('Error al reservar. Intenta de nuevo.');
-    } finally {
-      setLoading(false);
+      setToast({ show: true, message: 'Error al reservar. Intenta de nuevo.', type: 'error' });
     }
   };
 
@@ -160,8 +159,16 @@ export default function BookAppointmentPage() {
           motivo={motivo}
           onCancel={() => setShowModal(false)}
           onConfirm={handleConfirm}
-          loading={loading}
+          loading={isLoading}
           error={error}
+        />
+      )}
+
+      {(toast.show || error) && (
+        <ToastNotification
+          message={toast.message || error}
+          type={error ? 'error' : toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
         />
       )}
     </div>

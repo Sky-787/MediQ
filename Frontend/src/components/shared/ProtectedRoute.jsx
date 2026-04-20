@@ -1,6 +1,7 @@
 // src/components/shared/ProtectedRoute.jsx
+import { useEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import useAuthStore from '../../stores/useAuthStore'
 
 /**
  * ProtectedRoute
@@ -8,15 +9,18 @@ import { useAuth } from '../../context/AuthContext'
  *   allowedRoles?: string[]  — array de roles permitidos (ej: ['paciente'])
  *
  * Lógica en orden:
- *  1. isLoading  → <LoadingSpinner fullPage />  (espera verificación de sesión)
+ *  1. isLoading  → spinner (espera verificación de sesión) — evita flicker al F5
  *  2. !isAuthenticated → <Navigate to="/login" replace />
  *  3. allowedRoles y rol no incluido → <Navigate to="/" replace />
  *  4. todo OK → <Outlet />
  */
 export default function ProtectedRoute({ allowedRoles }) {
-  const { isAuthenticated, isLoading, user } = useAuth()
+  const { isAuthenticated, isLoading, user, checkSession } = useAuthStore()
 
-  // 1. Esperando que AuthContext verifique la sesión con /auth/me
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
+
   if (isLoading) {
     return <LoadingSpinnerFallback />
   }
@@ -35,10 +39,6 @@ export default function ProtectedRoute({ allowedRoles }) {
   return <Outlet />
 }
 
-/**
- * Fallback de carga interno para no crear una dependencia circular con LoadingSpinner.
- * Persona B reemplazará esto cuando cree el componente real.
- */
 function LoadingSpinnerFallback() {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-white/70 z-50">
