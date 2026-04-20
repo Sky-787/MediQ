@@ -2,37 +2,39 @@
 import { create } from 'zustand'
 import axiosInstance from '../api/axiosInstance'
 
-const useAuthStore = create((set, get) => ({
-  // ─── Estado ───────────────────────────────────────────────
+export const useAuthStore = create((set, get) => ({
+  // ─── Estado ───────────────────────────────────────────────────────────────
   user: null,
   isAuthenticated: false,
-  isLoading: true,   // true al inicio → evita flicker al recargar (F5)
+  isLoading: true,   // true desde el inicio → evita flicker al recargar (F5)
   error: null,
 
-  // ─── Acciones ─────────────────────────────────────────────
+  // ─── Acciones ─────────────────────────────────────────────────────────────
 
   /**
    * checkSession()
-   * Llama GET /auth/me para saber si hay sesión activa con la cookie.
-   * Se llama automáticamente al montar ProtectedRoute.
+   * Verifica si hay una cookie activa llamando a GET /auth/me.
+   * Se llama automáticamente desde ProtectedRoute al montar.
    */
   checkSession: async () => {
     try {
       const { data } = await axiosInstance.get('/auth/me')
       if (data && data.data) {
-        set({ user: data.data, isAuthenticated: true, isLoading: false })
+        set({ user: data.data, isAuthenticated: true })
       } else {
-        set({ user: null, isAuthenticated: false, isLoading: false })
+        set({ user: null, isAuthenticated: false })
       }
     } catch {
-      // 401 u otro error → no hay sesión activa
-      set({ user: null, isAuthenticated: false, isLoading: false })
+      // 401 u otro error → sin sesión activa, no es error de la app
+      set({ user: null, isAuthenticated: false })
+    } finally {
+      set({ isLoading: false })
     }
   },
 
   /**
    * login(email, password)
-   * Llama POST /auth/login con las credenciales.
+   * Llama POST /auth/login y guarda el usuario en el store.
    */
   login: async (email, password) => {
     try {
@@ -41,11 +43,10 @@ const useAuthStore = create((set, get) => ({
         email,
         contrasena: password,
       })
-
       if (data && data.data) {
-        set({ user: data.data, isAuthenticated: true, error: null })
+        set({ user: data.data, isAuthenticated: true })
       } else {
-        set({ user: data, isAuthenticated: true, error: null })
+        set({ user: data, isAuthenticated: true })
       }
     } catch (err) {
       const mensaje =
@@ -70,13 +71,11 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  /** clearError() — limpia el último error sin cerrar sesión */
+  /** clearError() — limpia el último error sin hacer logout */
   clearError: () => set({ error: null }),
 
-  // ─── Helpers de rol ───────────────────────────────────────
+  // ─── Helpers de rol ───────────────────────────────────────────────────────
   isPaciente: () => get().user?.rol === 'paciente',
-  isMedico:   () => get().user?.rol === 'medico',
-  isAdmin:    () => get().user?.rol === 'admin',
+  isMedico: () => get().user?.rol === 'medico',
+  isAdmin: () => get().user?.rol === 'admin',
 }))
-
-export default useAuthStore

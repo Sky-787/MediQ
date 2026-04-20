@@ -1,6 +1,6 @@
 // src/components/ui/PatientNavbar.jsx
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 export default function PatientNavbar() {
   const { user, logout } = useAuthStore();
@@ -8,7 +8,7 @@ export default function PatientNavbar() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate('/login', { replace: true });
   };
 
   return (

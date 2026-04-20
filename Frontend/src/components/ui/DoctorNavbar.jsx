@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Bell, LogOut } from 'lucide-react';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const DoctorNavbar = () => {
   const { logout } = useAuthStore();
@@ -11,13 +11,13 @@ const DoctorNavbar = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate('/login', { replace: true });
   };
 
   const navItems = [
-    { path: '/doctor/agenda',        label: 'Agenda',          icon: Calendar },
-    { path: '/doctor/availability',  label: 'Disponibilidad',  icon: Clock },
-    { path: '/doctor/notifications', label: 'Notificaciones',  icon: Bell },
+    { path: '/doctor/agenda', label: 'Agenda', icon: Calendar },
+    { path: '/doctor/availability', label: 'Disponibilidad', icon: Clock },
+    { path: '/doctor/notifications', label: 'Notificaciones', icon: Bell },
   ];
 
   return (

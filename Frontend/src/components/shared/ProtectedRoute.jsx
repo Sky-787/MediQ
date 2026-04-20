@@ -1,28 +1,25 @@
 // src/components/shared/ProtectedRoute.jsx
-import { useEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import useAuthStore from '../../stores/useAuthStore'
+import { useAuthStore } from '../../stores/useAuthStore'
 
 /**
  * ProtectedRoute
  * Props:
  *   allowedRoles?: string[]  — array de roles permitidos (ej: ['paciente'])
  *
+ * checkSession() ya fue llamado en App.jsx al montar la app.
+ * Aquí solo leemos el estado del store.
+ *
  * Lógica en orden:
- *  1. isLoading  → spinner (espera verificación de sesión) — evita flicker al F5
+ *  1. isLoading  → spinner (espera verificación de sesión → flicker-free)
  *  2. !isAuthenticated → <Navigate to="/login" replace />
  *  3. allowedRoles y rol no incluido → <Navigate to="/" replace />
  *  4. todo OK → <Outlet />
  */
 export default function ProtectedRoute({ allowedRoles }) {
-  const { isAuthenticated, isLoading, user, checkSession } = useAuthStore()
+  const { isAuthenticated, isLoading, user } = useAuthStore()
 
-  // Verificar sesión al montar (flicker-free: isLoading arranca en true)
-  useEffect(() => {
-    checkSession()
-  }, [checkSession])
-
-  // 1. Esperando que el store verifique la sesión con /auth/me
+  // 1. Esperando verificación de sesión con /auth/me
   if (isLoading) {
     return <LoadingSpinnerFallback />
   }
@@ -33,7 +30,7 @@ export default function ProtectedRoute({ allowedRoles }) {
   }
 
   // 3. Rol no autorizado → ir al inicio
-  if (allowedRoles && user?.rol && !allowedRoles.includes(user.rol)) {
+  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user?.rol)) {
     return <Navigate to="/" replace />
   }
 

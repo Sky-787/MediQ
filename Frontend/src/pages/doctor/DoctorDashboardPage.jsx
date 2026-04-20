@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Bell, Users, ChevronRight, LogOut } from 'lucide-react';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import useApi from '../../hooks/useApi';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import CustomCard from '../../components/ui/CustomCard';
@@ -11,7 +11,7 @@ const DoctorDashboardPage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { fetchData, loading } = useApi();
-
+  
   const [stats, setStats] = useState({
     todayAppointments: 0,
     pendingAppointments: 0,
@@ -22,8 +22,12 @@ const DoctorDashboardPage = () => {
   const [nextAppointments, setNextAppointments] = useState([]);
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/');
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   useEffect(() => {
@@ -31,12 +35,12 @@ const DoctorDashboardPage = () => {
       try {
         const appointments = await fetchData({ url: '/appointments' });
         const today = new Date().toISOString().split('T')[0];
-
-        const todayApps = appointments.data?.filter(apt =>
+        
+        const todayApps = appointments.data?.filter(apt => 
           apt.fechaHora?.startsWith(today)
         ) || [];
-
-        const pendingApps = appointments.data?.filter(apt =>
+        
+        const pendingApps = appointments.data?.filter(apt => 
           apt.estado === 'pendiente'
         ) || [];
 
@@ -62,22 +66,22 @@ const DoctorDashboardPage = () => {
   }, [fetchData]);
 
   const quickActions = [
-    {
-      title: 'Ver Agenda',
+    { 
+      title: 'Ver Agenda', 
       description: 'Gestiona tus citas del día',
       icon: Calendar,
       path: '/doctor/agenda',
       color: 'bg-blue-500',
     },
-    {
-      title: 'Configurar Disponibilidad',
+    { 
+      title: 'Configurar Disponibilidad', 
       description: 'Define tus horarios de atención',
       icon: Clock,
       path: '/doctor/availability',
       color: 'bg-green-500',
     },
-    {
-      title: 'Notificaciones',
+    { 
+      title: 'Notificaciones', 
       description: 'Revisa tus notificaciones',
       icon: Bell,
       path: '/doctor/notifications',
@@ -92,7 +96,6 @@ const DoctorDashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
@@ -114,7 +117,6 @@ const DoctorDashboardPage = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <CustomCard className="p-6">
             <div className="flex items-center justify-between">
@@ -122,7 +124,9 @@ const DoctorDashboardPage = () => {
                 <p className="text-sm text-gray-600">Citas hoy</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.todayAppointments}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full"><Calendar className="w-6 h-6 text-blue-700" /></div>
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Calendar className="w-6 h-6 text-blue-700" />
+              </div>
             </div>
           </CustomCard>
 
@@ -132,7 +136,9 @@ const DoctorDashboardPage = () => {
                 <p className="text-sm text-gray-600">Pendientes</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.pendingAppointments}</p>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-full"><Clock className="w-6 h-6 text-yellow-700" /></div>
+              <div className="bg-yellow-100 p-3 rounded-full">
+                <Clock className="w-6 h-6 text-yellow-700" />
+              </div>
             </div>
           </CustomCard>
 
@@ -142,7 +148,9 @@ const DoctorDashboardPage = () => {
                 <p className="text-sm text-gray-600">Pacientes</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalPatients}</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full"><Users className="w-6 h-6 text-green-700" /></div>
+              <div className="bg-green-100 p-3 rounded-full">
+                <Users className="w-6 h-6 text-green-700" />
+              </div>
             </div>
           </CustomCard>
 
@@ -152,12 +160,13 @@ const DoctorDashboardPage = () => {
                 <p className="text-sm text-gray-600">Notificaciones</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.notifications}</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full"><Bell className="w-6 h-6 text-purple-700" /></div>
+              <div className="bg-purple-100 p-3 rounded-full">
+                <Bell className="w-6 h-6 text-purple-700" />
+              </div>
             </div>
           </CustomCard>
         </div>
 
-        {/* Quick Actions */}
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {quickActions.map((action) => (
@@ -186,11 +195,13 @@ const DoctorDashboardPage = () => {
           ))}
         </div>
 
-        {/* Próximas citas */}
         <CustomCard className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Próximas Citas</h2>
-            <button onClick={() => navigate('/doctor/agenda')} className="text-sm text-teal-700 hover:text-teal-800 flex items-center gap-1">
+            <button
+              onClick={() => navigate('/doctor/agenda')}
+              className="text-sm text-teal-700 hover:text-teal-800 flex items-center gap-1"
+            >
               Ver todas <ChevronRight className="w-4 h-4" />
             </button>
           </div>

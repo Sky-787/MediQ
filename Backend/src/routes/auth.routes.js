@@ -6,6 +6,29 @@ const { validateRequest } = require('../utils/validators');
 
 const router = Router();
 
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Registrar usuario
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               contrasena:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Usuario creado
+ */
 router.post(
   '/register',
   [
@@ -18,6 +41,27 @@ router.post(
   register
 );
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Iniciar sesión
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               contrasena:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login exitoso
+ */
 router.post(
   '/login',
   [
@@ -28,7 +72,28 @@ router.post(
   login
 );
 
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Cerrar sesión
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.post('/logout', authenticate, logout);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Mi perfil
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/me', authenticate, getMe);
 
 module.exports = router;

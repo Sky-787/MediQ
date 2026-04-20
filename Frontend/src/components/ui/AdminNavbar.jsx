@@ -2,7 +2,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, BarChart3, Users, LogOut } from 'lucide-react';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const AdminNavbar = () => {
   const { logout } = useAuthStore();
@@ -10,13 +10,13 @@ const AdminNavbar = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate('/login', { replace: true });
   };
 
   const navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/reports',   label: 'Reportes',  icon: BarChart3 },
-    { path: '/admin/users',     label: 'Usuarios',  icon: Users },
+    { path: '/admin/reports', label: 'Reportes', icon: BarChart3 },
+    { path: '/admin/users', label: 'Usuarios', icon: Users },
   ];
 
   return (
