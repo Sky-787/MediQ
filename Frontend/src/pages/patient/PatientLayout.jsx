@@ -5,7 +5,7 @@ export default function PatientLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <PatientNavbar />
-      <main className="p-4">
+      <main className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8">
         <Outlet />
       </main>
     </div>
