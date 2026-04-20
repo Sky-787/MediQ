@@ -116,7 +116,7 @@ export default function SearchDoctorsPage() {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login', { replace: true });
+      navigate('/');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
