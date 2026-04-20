@@ -1,14 +1,12 @@
-﻿// src/pages/doctor/AgendaPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import useApi from '../../hooks/useApi';
+import useAppointmentStore from '../../stores/useAppointmentStore';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import ToastNotification from '../../components/shared/ToastNotification';
 import EmptyState from '../../components/shared/EmptyState';
 
 const AgendaPage = () => {
-  const { fetchData, loading } = useApi();
-  const [appointments, setAppointments] = useState([]);
+  const { appointments, isLoading, error, fetchAppointments, updateAppointment, cancelAppointment } = useAppointmentStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showActions, setShowActions] = useState(false);
@@ -36,12 +34,11 @@ const AgendaPage = () => {
   // Cargar citas del médico
   const loadAppointments = useCallback(async () => {
     try {
-      const data = await fetchData({ url: '/appointments' });
-      setAppointments(data.data || []);
+      await fetchAppointments();
     } catch (error) {
       setToast({ show: true, message: 'Error al cargar citas', type: 'error' });
     }
-  }, [fetchData]);
+  }, [fetchAppointments]);
 
   useEffect(() => {
     loadAppointments();
@@ -82,14 +79,9 @@ const AgendaPage = () => {
   // Confirmar cita
   const handleConfirm = async (appointmentId) => {
     try {
-      await fetchData({
-        url: `/appointments/${appointmentId}/status`,
-        method: 'PATCH',
-        data: { estado: 'confirmada' },
-      });
+      await updateAppointment(appointmentId, { estado: 'confirmada' });
       setToast({ show: true, message: 'Cita confirmada', type: 'success' });
       setShowActions(false);
-      loadAppointments();
     } catch (error) {
       setToast({ show: true, message: 'Error al confirmar', type: 'error' });
     }
@@ -98,20 +90,15 @@ const AgendaPage = () => {
   // Rechazar/Cancelar cita
   const handleReject = async (appointmentId) => {
     try {
-      await fetchData({
-        url: `/appointments/${appointmentId}/status`,
-        method: 'PATCH',
-        data: { estado: 'cancelada' },
-      });
+      await cancelAppointment(appointmentId);
       setToast({ show: true, message: 'Cita cancelada', type: 'success' });
       setShowActions(false);
-      loadAppointments();
     } catch (error) {
       setToast({ show: true, message: 'Error al cancelar', type: 'error' });
     }
   };
 
-  if (loading && !appointments.length) {
+  if (isLoading && !appointments.length) {
     return <LoadingSpinner fullPage />;
   }
 
@@ -256,10 +243,10 @@ const AgendaPage = () => {
       )}
 
       {/* Toast Notifications */}
-      {toast.show && (
+      {(toast.show || error) && (
         <ToastNotification
-          message={toast.message}
-          type={toast.type}
+          message={toast.message || error}
+          type={error && !toast.show ? 'error' : toast.type}
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
