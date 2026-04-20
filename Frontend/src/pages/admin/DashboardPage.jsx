@@ -162,7 +162,7 @@ const DashboardPage = () => {
   const handleLogout = useCallback(async () => {
     try {
       await logout();
-      navigate('/');
+      navigate('/login', { replace: true });
     } catch (error) {
       showToastMessage('Error al cerrar sesión', error.message);
     }
