@@ -2,7 +2,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import DoctorNavbar from '../../components/ui/DoctorNavbar';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const DoctorLayout = () => {
   const { user } = useAuthStore();

@@ -1,6 +1,8 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import ProtectedRoute from './components/shared/ProtectedRoute'
+import { useAuthStore } from './stores/useAuthStore'
 
 // Páginas públicas
 import LandingPage from './pages/public/LandingPage'
@@ -23,18 +25,14 @@ import DashboardPage from './pages/admin/DashboardPage'
 import ReportsPage from './pages/admin/ReportsPage'
 import UsersManagementPage from './pages/admin/UsersManagementPage'
 
-/**
- * App.jsx — AppRouter con TODAS las rutas de MediQ
- *
- * Rutas públicas: / | /login | /register
- * Rutas de paciente (protegidas con allowedRoles=['paciente']):
- *   /patient/search | /patient/book/:doctorId | /patient/appointments
- * Rutas de médico (protegidas con allowedRoles=['medico']):
- *   /doctor/agenda | /doctor/availability | /doctor/notifications
- * Rutas de admin (protegidas con allowedRoles=['admin']):
- *   /admin/dashboard | /admin/reports | /admin/users
- */
 export default function App() {
+  const checkSession = useAuthStore((state) => state.checkSession)
+
+  // Verificar sesión UNA SOLA VEZ al arrancar la app
+  useEffect(() => {
+    checkSession()
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>
@@ -52,7 +50,7 @@ export default function App() {
 
         {/* ── Rutas del Médico (solo rol 'medico') ── */}
         <Route element={<ProtectedRoute allowedRoles={['medico']} />}>
-          <Route path="/doctor" element={<DoctorDashboardPage />} /> {/* NUEVO */}
+          <Route path="/doctor" element={<DoctorDashboardPage />} />
           <Route path="/doctor/agenda" element={<AgendaPage />} />
           <Route path="/doctor/availability" element={<AvailabilityPage />} />
           <Route path="/doctor/notifications" element={<NotificationsPage />} />

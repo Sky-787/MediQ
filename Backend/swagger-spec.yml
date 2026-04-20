@@ -377,11 +377,130 @@ tags:
     description: Gestión del perfil de médicos
   - name: Appointments
     description: Gestión de citas médicas (requiere autenticación)
+  - name: Reports          
+    description: Reportes estadísticos (solo admin)
 
 # ─────────────────────────────────────────────
 # PATHS
 # ─────────────────────────────────────────────
 paths:
+  # ── REPORTS ───────────────────────────────────
+  /reports/ocupacion:
+    get:
+      tags: [Reports]
+      summary: Reporte de ocupación por médico
+      operationId: getOcupacion
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de médicos con total de citas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        doctorId:
+                          type: string
+                        nombre:
+                          type: string
+                        especialidad:
+                          type: string
+                        totalCitas:
+                          type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/especialidades:
+    get:
+      tags: [Reports]
+      summary: Reporte de citas por especialidad
+      operationId: getByEspecialidad
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de especialidades con total de citas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        especialidad:
+                          type: string
+                        total:
+                          type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports/periodo:
+    get:
+      tags: [Reports]
+      summary: Reporte de citas por período
+      operationId: getByPeriodo
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Fecha de inicio (YYYY-MM-DD)
+        - name: fin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Fecha de fin (YYYY-MM-DD)
+        - $ref: '#/components/parameters/queryPage'
+        - $ref: '#/components/parameters/queryLimit'
+      responses:
+        '200':
+          description: Lista paginada de citas en el período
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          description: Faltan parámetros o formato inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   # ── HEALTH ──────────────────────────────────
   /health:

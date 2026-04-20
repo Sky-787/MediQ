@@ -1,6 +1,6 @@
 // src/components/ui/PatientNavbar.jsx
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 export default function PatientNavbar() {
   const { user, logout } = useAuthStore();

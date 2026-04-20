@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginSchema } from '../../utils/validationSchemas';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import AuthFeedback from '../../components/ui/AuthFeedback';
 
 export default function LoginPage() {
@@ -18,10 +18,10 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  // Redirigir según rol después de login exitoso
   useEffect(() => {
     if (isAuthenticated && user) {
-      switch (user.rol) {
+      const role = user.rol;
+      switch (role) {
         case 'admin':
           navigate('/admin/dashboard');
           break;
@@ -32,7 +32,7 @@ export default function LoginPage() {
           navigate('/patient/search');
           break;
         default:
-          console.log('Rol no reconocido:', user.rol);
+          console.log('Rol no reconocido:', role);
       }
     }
   }, [isAuthenticated, user, navigate]);
