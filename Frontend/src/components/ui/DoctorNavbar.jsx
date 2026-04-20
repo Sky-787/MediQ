@@ -1,5 +1,5 @@
 // src/components/ui/DoctorNavbar.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 const DoctorNavbar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(3); // Simulado, luego conectar a API
+  const unreadCount = 3; // Simulado, luego conectar a API
 
   const handleLogout = async () => {
     await logout();
