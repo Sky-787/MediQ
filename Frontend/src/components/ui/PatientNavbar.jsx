@@ -6,9 +6,9 @@ export default function PatientNavbar() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (

@@ -1,13 +1,18 @@
 // src/components/ui/DoctorNavbar.jsx
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Bell, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 
 const DoctorNavbar = () => {
   const { logout } = useAuthStore();
-  const [unreadCount] = useState(3); // Simulado, luego conectar a API
+  const navigate = useNavigate();
+  const unreadCount = 3; // Simulado, luego conectar a API
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
   const navItems = [
     { path: '/doctor/agenda', label: 'Agenda', icon: Calendar },
     { path: '/doctor/availability', label: 'Disponibilidad', icon: Clock },
@@ -45,7 +50,7 @@ const DoctorNavbar = () => {
             </div>
           </div>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />

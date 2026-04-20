@@ -1,13 +1,15 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
 import ProtectedRoute from './components/shared/ProtectedRoute'
+import Navbar from './components/ui/Navbar'
 import { useAuthStore } from './stores/useAuthStore'
 
 // Páginas públicas
 import LandingPage from './pages/public/LandingPage'
 import LoginPage from './pages/public/LoginPage'
 import RegisterPage from './pages/public/RegisterPage'
+import NotFoundPage from './pages/public/NotFoundPage'
 
 // Páginas del paciente
 import SearchDoctorsPage from './pages/patient/SearchDoctorsPage'
@@ -24,6 +26,18 @@ import NotificationsPage from './pages/doctor/NotificationsPage'
 import DashboardPage from './pages/admin/DashboardPage'
 import ReportsPage from './pages/admin/ReportsPage'
 import UsersManagementPage from './pages/admin/UsersManagementPage'
+import AdminLayout from './pages/admin/AdminLayout'
+import DoctorLayout from './pages/doctor/DoctorLayout'
+import PatientLayout from './pages/patient/PatientLayout'
+
+function PublicLayout() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <Outlet />
+    </div>
+  )
+}
 
 export default function App() {
   const checkSession = useAuthStore((state) => state.checkSession)
@@ -37,31 +51,43 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* ── Rutas Públicas ── */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
 
         {/* ── Rutas del Paciente (solo rol 'paciente') ── */}
         <Route element={<ProtectedRoute allowedRoles={['paciente']} />}>
-          <Route path="/patient/search" element={<SearchDoctorsPage />} />
-          <Route path="/patient/book/:doctorId" element={<BookAppointmentPage />} />
-          <Route path="/patient/appointments" element={<MyAppointmentsPage />} />
+          <Route path="/patient" element={<PatientLayout />}>
+            <Route index element={<Navigate to="search" replace />} />
+            <Route path="search" element={<SearchDoctorsPage />} />
+            <Route path="book/:doctorId" element={<BookAppointmentPage />} />
+            <Route path="appointments" element={<MyAppointmentsPage />} />
+          </Route>
         </Route>
 
         {/* ── Rutas del Médico (solo rol 'medico') ── */}
         <Route element={<ProtectedRoute allowedRoles={['medico']} />}>
-          <Route path="/doctor" element={<DoctorDashboardPage />} />
-          <Route path="/doctor/agenda" element={<AgendaPage />} />
-          <Route path="/doctor/availability" element={<AvailabilityPage />} />
-          <Route path="/doctor/notifications" element={<NotificationsPage />} />
+          <Route path="/doctor" element={<DoctorLayout />}>
+            <Route index element={<DoctorDashboardPage />} />
+            <Route path="agenda" element={<AgendaPage />} />
+            <Route path="availability" element={<AvailabilityPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+          </Route>
         </Route>
 
         {/* ── Rutas del Administrador (solo rol 'admin') ── */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin/dashboard" element={<DashboardPage />} />
-          <Route path="/admin/reports" element={<ReportsPage />} />
-          <Route path="/admin/users" element={<UsersManagementPage />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="users" element={<UsersManagementPage />} />
+          </Route>
         </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )

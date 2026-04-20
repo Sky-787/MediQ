@@ -84,7 +84,7 @@ const DashboardPage = () => {
   const handleLogout = useCallback(async () => {
     try {
       await logout();
-      navigate('/');
+      navigate('/login', { replace: true });
     } catch (error) {
       showToastMessage('Error al cerrar sesión', error.message);
     }
@@ -153,7 +153,7 @@ const DashboardPage = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Bienvenido, {user?.nombre} ·{' '}
+                Bienvenido, {user?.nombre} · {user?.email} ·{' '}
                 <span className="font-semibold text-teal-700">({user?.rol})</span>
               </p>
             </div>
@@ -176,14 +176,12 @@ const DashboardPage = () => {
           <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToReports}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Reportes</p>
+                <p className="text-sm font-medium text-gray-600">Citas hoy</p>
                 <p className="text-3xl font-bold text-gray-900 mt-2">{stats.todayAppointments}</p>
-              </div>
-              <div className="bg-teal-100 p-3 rounded-full">
-                <Calendar className="w-6 h-6 text-teal-700" />
               </div>
             </div>
           </div>
+
           <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToUsers}>
             <div className="flex items-center justify-between">
               <div>
