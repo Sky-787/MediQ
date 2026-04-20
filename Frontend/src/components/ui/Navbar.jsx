@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 function getHomeByRole(role) {
 	switch (role) {
@@ -16,7 +16,7 @@ function getHomeByRole(role) {
 
 export default function Navbar() {
 	const navigate = useNavigate();
-	const { user, isAuthenticated, logout } = useAuth();
+	const { user, isAuthenticated, logout } = useAuthStore();
 
 	const handleLogout = async () => {
 		await logout();
