@@ -8,7 +8,7 @@ export default function PatientNavbar() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate('/login', { replace: true });
   };
 
   return (
