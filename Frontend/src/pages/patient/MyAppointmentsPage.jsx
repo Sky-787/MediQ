@@ -1,5 +1,7 @@
-﻿import { useState, useEffect } from 'react';
-import axiosInstance from '../../api/axiosInstance';
+import { useState, useEffect } from 'react';
+import useAppointmentStore from '../../stores/useAppointmentStore';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ToastNotification from '../../components/shared/ToastNotification';
 import Badge from '../../components/ui/Badge';
 
 const TABS = ['Próximas', 'Pasadas', 'Canceladas'];
@@ -39,7 +41,7 @@ function CancelModal({ appointment, onClose, onConfirm, loading }) {
 }
 
 // ── RescheduleForm ────────────────────────────────────────────────
-function RescheduleForm({ appointment, onClose, onDone }) {
+function RescheduleForm({ appointment, onClose, onDone, updateAppointment }) {
   const [fechaHora, setFechaHora] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,7 +51,7 @@ function RescheduleForm({ appointment, onClose, onDone }) {
     setLoading(true);
     setError('');
     try {
-      await axiosInstance.put(`/appointments/${appointment._id}`, { fechaHora });
+      await updateAppointment(appointment._id, { fechaHora });
       onDone();
     } catch {
       setError('Error al reprogramar. Intenta de nuevo.');
@@ -125,19 +127,14 @@ function AppointmentCard({ appointment, onCancel, onReschedule }) {
 
 // ── MyAppointmentsPage ────────────────────────────────────────────
 export default function MyAppointmentsPage() {
-  const [appointments, setAppointments] = useState([]);
+  const { appointments, isLoading, error, fetchAppointments, cancelAppointment, updateAppointment } = useAppointmentStore();
   const [activeTab, setActiveTab] = useState('Próximas');
   const [cancelTarget, setCancelTarget] = useState(null);
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
-  const fetchAppointments = () => {
-    axiosInstance.get('/appointments')
-      .then(res => setAppointments(res.data || []))
-      .catch(() => setAppointments([]));
-  };
-
-  useEffect(() => { fetchAppointments(); }, []);
+  useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
   const filtered = appointments.filter(a => {
     const isFuture = new Date(a.fechaHora) >= new Date();
@@ -150,11 +147,11 @@ export default function MyAppointmentsPage() {
   const handleCancel = async (motivo) => {
     setCancelLoading(true);
     try {
-      await axiosInstance.patch(`/appointments/${cancelTarget._id}/status`, { estado: 'cancelada', motivo });
+      await cancelAppointment(cancelTarget._id, motivo);
       setCancelTarget(null);
-      fetchAppointments();
+      setToast({ show: true, message: 'Cita cancelada con éxito', type: 'success' });
     } catch {
-      // error silencioso
+      setToast({ show: true, message: 'Error al cancelar la cita', type: 'error' });
     } finally {
       setCancelLoading(false);
     }
@@ -181,8 +178,9 @@ export default function MyAppointmentsPage() {
         ))}
       </div>
 
-      {/* Lista */}
-      {filtered.length === 0 ? (
+      {isLoading && appointments.length === 0 ? (
+        <LoadingSpinner />
+      ) : filtered.length === 0 ? (
         <div className="text-center text-gray-500 py-12">
           No hay citas en esta sección.
         </div>
@@ -212,7 +210,19 @@ export default function MyAppointmentsPage() {
         <RescheduleForm
           appointment={rescheduleTarget}
           onClose={() => setRescheduleTarget(null)}
-          onDone={() => { setRescheduleTarget(null); fetchAppointments(); }}
+          onDone={() => { 
+            setRescheduleTarget(null); 
+            setToast({ show: true, message: 'Cita reprogramada', type: 'success' }); 
+          }}
+          updateAppointment={updateAppointment}
+        />
+      )}
+
+      {(toast.show || error) && (
+        <ToastNotification
+          message={toast.message || error}
+          type={error ? 'error' : toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
         />
       )}
     </div>
