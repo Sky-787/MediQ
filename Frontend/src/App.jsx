@@ -1,7 +1,9 @@
 // src/App.jsx
 import { BrowserRouter, Navigate, Outlet, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 import Navbar from './components/ui/Navbar'
+import { useAuthStore } from './stores/useAuthStore'
 
 // Páginas públicas
 import LandingPage from './pages/public/LandingPage'
@@ -37,18 +39,14 @@ function PublicLayout() {
   )
 }
 
-/**
- * App.jsx — AppRouter con TODAS las rutas de MediQ
- *
- * Rutas públicas: / | /login | /register
- * Rutas de paciente (protegidas con allowedRoles=['paciente']):
- *   /patient/search | /patient/book/:doctorId | /patient/appointments
- * Rutas de médico (protegidas con allowedRoles=['medico']):
- *   /doctor/agenda | /doctor/availability | /doctor/notifications
- * Rutas de admin (protegidas con allowedRoles=['admin']):
- *   /admin/dashboard | /admin/reports | /admin/users
- */
 export default function App() {
+  const checkSession = useAuthStore((state) => state.checkSession)
+
+  // Verificar sesión UNA SOLA VEZ al arrancar la app
+  useEffect(() => {
+    checkSession()
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>

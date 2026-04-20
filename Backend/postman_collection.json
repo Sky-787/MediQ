@@ -1,37 +1,303 @@
 {
 	"info": {
 		"name": "MediQ API - Collection",
+		"description": "Colección completa de endpoints del backend de MediQ — Sistema de Agendamiento Médico.\n\nVariable {{baseUrl}} = http://localhost:5000/api\n\nFlujo recomendado:\n1. Register → crear usuario\n2. Login → autenticarse (cookie HttpOnly)\n3. Probar los demás endpoints",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Auth",
 			"item": [
-				{ "name": "register", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status code is 201', () => { pm.response.to.have.status(201); });"] } }], "request": { "method": "POST", "url": "{{baseUrl}}/auth/register" } },
-				{ "name": "login", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"] } }], "request": { "method": "POST", "url": "{{baseUrl}}/auth/login" } },
-				{ "name": "logout", "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" } },
-				{ "name": "perfil", "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" } }
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', () => { pm.response.to.have.status(201); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@email.com\",\n  \"contrasena\": \"123456\",\n  \"rol\": \"paciente\"\n}"
+						},
+						"url": "{{baseUrl}}/auth/register"
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"juan@email.com\",\n  \"contrasena\": \"123456\"\n}"
+						},
+						"url": "{{baseUrl}}/auth/login"
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"url": "{{baseUrl}}/auth/logout"
+					}
+				},
+				{
+					"name": "Mi Perfil (Get Me)",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/auth/me"
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"description": "Gestión de usuarios. La mayoría requiere rol admin.",
+			"item": [
+				{
+					"name": "Listar Usuarios (Admin)",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/users"
+					}
+				},
+				{
+					"name": "Obtener Usuario por ID",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/users/:id"
+					}
+				},
+				{
+					"name": "Actualizar Usuario",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Nombre Actualizado\",\n  \"email\": \"nuevo@email.com\"\n}"
+						},
+						"url": "{{baseUrl}}/users/:id"
+					}
+				},
+				{
+					"name": "Eliminar Usuario (Admin)",
+					"request": {
+						"method": "DELETE",
+						"url": "{{baseUrl}}/users/:id"
+					}
+				}
 			]
 		},
 		{
 			"name": "Doctors",
+			"description": "Gestión de médicos.",
 			"item": [
-				{ "name": "listar", "request": { "method": "GET", "url": "{{baseUrl}}/doctors" } },
-				{ "name": "detalle", "request": { "method": "GET", "url": "{{baseUrl}}/doctors/:id" } },
-				{ "name": "crear", "request": { "method": "POST", "url": "{{baseUrl}}/doctors" } },
-				{ "name": "actualizar", "request": { "method": "PUT", "url": "{{baseUrl}}/doctors/:id" } }
+				{
+					"name": "Listar Médicos",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/doctors"
+					}
+				},
+				{
+					"name": "Obtener Médico por ID",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/doctors/:id"
+					}
+				},
+				{
+					"name": "Crear Médico (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Dra. María García\",\n  \"email\": \"maria.garcia@mediq.com\",\n  \"contrasena\": \"123456\",\n  \"especialidad\": \"Medicina General\",\n  \"telefono\": \"3001234567\"\n}"
+						},
+						"url": "{{baseUrl}}/doctors"
+					}
+				},
+				{
+					"name": "Actualizar Médico",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"especialidad\": \"Pediatría\",\n  \"telefono\": \"3009876543\"\n}"
+						},
+						"url": "{{baseUrl}}/doctors/:id"
+					}
+				},
+				{
+					"name": "Eliminar Médico (Admin)",
+					"request": {
+						"method": "DELETE",
+						"url": "{{baseUrl}}/doctors/:id"
+					}
+				}
 			]
 		},
 		{
 			"name": "Appointments",
+			"description": "Gestión de citas médicas.",
 			"item": [
-				{ "name": "crear", "request": { "method": "POST", "url": "{{baseUrl}}/appointments" } },
-				{ "name": "mis citas", "request": { "method": "GET", "url": "{{baseUrl}}/appointments" } },
-				{ "name": "cambiar estado", "request": { "method": "PATCH", "url": "{{baseUrl}}/appointments/:id" } }
+				{
+					"name": "Listar Citas",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/appointments"
+					}
+				},
+				{
+					"name": "Obtener Cita por ID",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/appointments/:id"
+					}
+				},
+				{
+					"name": "Crear Cita (Paciente/Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"doctorId\": \"ID_DEL_DOCTOR\",\n  \"fecha\": \"2026-04-01\",\n  \"hora\": \"10:00\",\n  \"motivo\": \"Consulta general\"\n}"
+						},
+						"url": "{{baseUrl}}/appointments"
+					}
+				},
+				{
+					"name": "Cambiar Estado de Cita (Médico/Admin)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"confirmada\"\n}"
+						},
+						"url": "{{baseUrl}}/appointments/:id/status"
+					}
+				},
+				{
+					"name": "Eliminar Cita (Admin)",
+					"request": {
+						"method": "DELETE",
+						"url": "{{baseUrl}}/appointments/:id"
+					}
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"description": "Reportes del sistema (Admin).",
+			"item": [
+				{
+					"name": "Reporte de Ocupación",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/reports/ocupacion"
+					}
+				},
+				{
+					"name": "Reporte por Especialidad",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/reports/especialidades"
+					}
+				},
+				{
+					"name": "Reporte por Período",
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/reports/periodo"
+					}
+				}
+			]
+		},
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('API is running', () => { pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/health"
+					}
+				}
 			]
 		}
 	],
 	"variable": [
-		{ "key": "baseUrl", "value": "http://localhost:5000/api" }
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api"
+		}
 	]
 }

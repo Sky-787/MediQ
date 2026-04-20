@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginSchema } from '../../utils/validationSchemas';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import AuthFeedback from '../../components/ui/AuthFeedback';
 
 function getRouteByRole(role) {
@@ -31,7 +31,6 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  // Redirigir según rol después de login exitoso
   useEffect(() => {
     if (isAuthenticated && user?.rol) {
       navigate(getRouteByRole(user.rol), { replace: true });

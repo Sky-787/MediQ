@@ -1,10 +1,10 @@
+// src/pages/patient/SearchDoctorsPage.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, LogOut } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
-import useAuthStore from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 
-// ── AvailabilityGrid ──────────────────────────────────────────────
 function AvailabilityGrid({ doctor, onClose }) {
   const navigate = useNavigate();
   const [slots, setSlots] = useState([]);
@@ -26,36 +26,26 @@ function AvailabilityGrid({ doctor, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-4">
-          Disponibilidad — {doctor.nombre}
-        </h3>
+        <h3 className="text-lg font-semibold mb-4">Disponibilidad — {doctor.nombre}</h3>
         {slots.length === 0 ? (
           <p className="text-gray-500 text-sm">Sin slots disponibles.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {slots.map((slot, i) => (
-              <button
-                key={i}
-                onClick={() => handleSlot(slot)}
-                className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm hover:bg-teal-200"
-              >
+              <button key={i} onClick={() => handleSlot(slot)} className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm hover:bg-teal-200">
                 {slot.fechaHora || slot}
               </button>
             ))}
           </div>
         )}
-        <button onClick={onClose} className="mt-4 text-sm text-gray-500 hover:underline">
-          Cerrar
-        </button>
+        <button onClick={onClose} className="mt-4 text-sm text-gray-500 hover:underline">Cerrar</button>
       </div>
     </div>
   );
 }
 
-// ── DoctorCard ────────────────────────────────────────────────────
 function DoctorCard({ doctor, onVerDisponibilidad }) {
   const slots = Array.isArray(doctor.slots) ? doctor.slots : [];
-
   return (
     <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-2">
       <div className="flex items-center gap-3">
@@ -81,17 +71,13 @@ function DoctorCard({ doctor, onVerDisponibilidad }) {
           <span className="text-xs text-gray-500 px-2 py-1">+{slots.length - 3} más</span>
         )}
       </div>
-      <button
-        onClick={() => onVerDisponibilidad(doctor)}
-        className="mt-1 bg-teal-700 text-white text-sm px-4 py-2 rounded hover:bg-teal-800 transition-colors"
-      >
+      <button onClick={() => onVerDisponibilidad(doctor)} className="mt-1 bg-teal-700 text-white text-sm px-4 py-2 rounded hover:bg-teal-800 transition-colors">
         Ver disponibilidad
       </button>
     </div>
   );
 }
 
-// ── SearchDoctorsPage ─────────────────────────────────────────────
 export default function SearchDoctorsPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
@@ -111,28 +97,19 @@ export default function SearchDoctorsPage() {
         const params = {};
         if (especialidad) params.especialidad = especialidad;
         if (fecha) params.fecha = fecha;
-
         const res = await axiosInstance.get('/doctors', { params });
-
         let doctorsData = [];
-        if (Array.isArray(res.data)) {
-          doctorsData = res.data;
-        } else if (res.data?.data && Array.isArray(res.data.data)) {
-          doctorsData = res.data.data;
-        } else if (res.data?.doctors && Array.isArray(res.data.doctors)) {
-          doctorsData = res.data.doctors;
-        }
-
+        if (Array.isArray(res.data)) doctorsData = res.data;
+        else if (res.data?.data && Array.isArray(res.data.data)) doctorsData = res.data.data;
+        else if (res.data?.doctors && Array.isArray(res.data.doctors)) doctorsData = res.data.doctors;
         setDoctors(doctorsData);
       } catch (err) {
-        console.error('Error fetching doctors:', err);
         setError('Error al cargar los médicos');
         setDoctors([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchDoctors();
   }, [especialidad, fecha]);
 
@@ -162,10 +139,7 @@ export default function SearchDoctorsPage() {
         <h2 className="text-2xl font-bold text-gray-800">Buscar Médico</h2>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600">{user?.nombre} ({user?.rol})</span>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Cerrar sesión</span>
           </button>
@@ -173,19 +147,8 @@ export default function SearchDoctorsPage() {
       </div>
 
       <div className="flex gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Especialidad"
-          value={especialidad}
-          onChange={e => setEspecialidad(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500"
-        />
-        <input
-          type="date"
-          value={fecha}
-          onChange={e => setFecha(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500"
-        />
+        <input type="text" placeholder="Especialidad" value={especialidad} onChange={e => setEspecialidad(e.target.value)} className="border border-gray-300 rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500" />
+        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500" />
       </div>
 
       {error && <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
