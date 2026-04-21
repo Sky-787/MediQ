@@ -5,19 +5,20 @@ import {
   Calendar, Users, LogOut, Filter, Edit, XCircle, FileText, BarChart3,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import useToastStore from '../../stores/useToastStore';
 import useApi from '../../hooks/useApi';
 import CustomCard from '../../components/ui/CustomCard';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Pagination from '../../components/shared/Pagination';
 import EmptyState from '../../components/shared/EmptyState';
 import ModalWrapper from '../../components/shared/ModalWrapper';
-import ToastNotification from '../../components/shared/ToastNotification';
 import Badge from '../../components/ui/Badge';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { fetchData, loading: apiLoading } = useApi();
+  const { showToast } = useToastStore();
 
   const isAuthorized = isAuthenticated && user?.rol === 'admin';
 
@@ -27,7 +28,6 @@ const DashboardPage = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
   const isMounted = useRef(true);
   const hasRedirected = useRef(false);
@@ -53,10 +53,6 @@ const DashboardPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const showToastMessage = useCallback((message, type) => {
-    if (isMounted.current) setToast({ show: true, message, type });
-  }, []);
-
   const loadDashboardData = useCallback(async () => {
     if (!isAuthorized) return;
     try {
@@ -77,18 +73,18 @@ const DashboardPage = () => {
       setAppointments(appointmentsData.data || []);
       setPagination(prev => ({ ...prev, total: appointmentsData.total || 0 }));
     } catch (error) {
-      if (isMounted.current) showToastMessage('Error al cargar los datos del dashboard', error.message);
+      if (isMounted.current) showToast('Error al cargar los datos del dashboard', 'error');
     }
-  }, [fetchData, pagination.page, pagination.limit, filters, showToastMessage, isAuthorized]);
+  }, [fetchData, pagination.page, pagination.limit, filters, showToast, isAuthorized]);
 
   const handleLogout = useCallback(async () => {
     try {
       await logout();
       navigate('/login', { replace: true });
-    } catch (error) {
-      showToastMessage('Error al cerrar sesión', error.message);
+    } catch {
+      showToast('Error al cerrar sesión', 'error');
     }
-  }, [logout, navigate, showToastMessage]);
+  }, [logout, navigate, showToast]);
 
   const handleNavigateToUsers = () => { window.location.href = '/admin/users'; };
   const handleNavigateToReports = () => { window.location.href = '/admin/reports'; };
@@ -125,13 +121,13 @@ const DashboardPage = () => {
     try {
       await fetchData({ url: `/appointments/${appointmentId}/status`, method: 'PATCH', data: { estado: 'cancelada' } });
       if (isMounted.current) {
-        showToastMessage('Cita cancelada exitosamente', 'success');
+        showToast('Cita cancelada exitosamente', 'success');
         await loadDashboardData();
       }
-    } catch (error) {
-      if (isMounted.current) showToastMessage('Error al cancelar la cita', error.message);
+    } catch {
+      if (isMounted.current) showToast('Error al cancelar la cita', 'error');
     }
-  }, [fetchData, showToastMessage, loadDashboardData]);
+  }, [fetchData, showToast, loadDashboardData]);
 
   const getStatusBadge = useCallback((status) => {
     const variants = { confirmada: 'success', pendiente: 'warning', cancelada: 'danger', completada: 'info' };
@@ -296,10 +292,6 @@ const DashboardPage = () => {
           </div>
         )}
       </ModalWrapper>
-
-      {toast.show && (
-        <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
-      )}
     </div>
   );
 };
