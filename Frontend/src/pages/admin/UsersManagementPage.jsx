@@ -76,18 +76,18 @@ const UsersManagementPage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
-        <p className="text-gray-600 mt-1">Administra los usuarios del sistema</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Gestión de Usuarios</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">Administra los usuarios del sistema</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-gray-500" />
-          <h2 className="text-lg font-semibold">Filtros</h2>
+          <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          <h2 className="text-base sm:text-lg font-semibold dark:text-white">Filtros</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -115,32 +115,32 @@ const UsersManagementPage = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
         {paginatedUsers.length === 0 ? (
           <EmptyState icon={UserCog} title="No hay usuarios" description="No se encontraron usuarios con los filtros aplicados" />
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
+              <table className="w-full min-w-[560px]">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nombre</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Rol</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estado</th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedUsers.map((user) => (
-                    <tr key={user._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
+                    <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <td className="px-4 sm:px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900">{user.nombre}</p>
-                          {user.especialidad && <p className="text-xs text-gray-500">{user.especialidad}</p>}
+                          <p className="font-medium text-gray-900 dark:text-white text-sm">{user.nombre}</p>
+                          {user.especialidad && <p className="text-xs text-gray-500 dark:text-gray-400">{user.especialidad}</p>}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                      <td className="px-4 sm:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-[160px] truncate">{user.email}</td>
                       <td className="px-6 py-4">
                         {editingRole.userId === user._id ? (
                           <div className="flex items-center gap-2">
