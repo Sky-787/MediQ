@@ -103,38 +103,72 @@ const AgendaPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header con navegación de semanas */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
+      <div className="flex items-center justify-between bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-lg shadow">
         <button
           onClick={() => changeWeek(-1)}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-5 h-5 dark:text-gray-300" />
         </button>
         
-        <h2 className="text-lg font-semibold">
-          Semana del {weekDays[0].toLocaleDateString()} al {weekDays[6].toLocaleDateString()}
+        <h2 className="text-sm sm:text-lg font-semibold dark:text-white text-center">
+          <span className="hidden sm:inline">Semana del </span>
+          {weekDays[0].toLocaleDateString()} — {weekDays[6].toLocaleDateString()}
         </h2>
         
         <button
           onClick={() => changeWeek(1)}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5 dark:text-gray-300" />
         </button>
       </div>
 
-      {/* Calendario semanal */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Vista móvil: lista de citas de la semana */}
+      <div className="block lg:hidden bg-white dark:bg-gray-900 rounded-lg shadow divide-y dark:divide-gray-700">
+        {appointments.length === 0 ? (
+          <EmptyState icon={CalendarIcon} title="Sin citas esta semana" description="No hay citas programadas para este período." />
+        ) : (
+          appointments
+            .filter(apt => {
+              const d = new Date(apt.fechaHora);
+              return d >= weekDays[0] && d <= new Date(weekDays[6].getTime() + 86400000);
+            })
+            .sort((a, b) => new Date(a.fechaHora) - new Date(b.fechaHora))
+            .map(apt => (
+              <div
+                key={apt._id}
+                className={`p-4 cursor-pointer ${getStatusColor(apt.estado)}`}
+                onClick={() => { setSelectedSlot(apt); setShowActions(true); }}
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm dark:text-white truncate">{apt.paciente?.nombre}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      {new Date(apt.fechaHora).toLocaleString('es-CO', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs px-2 py-1 rounded-full bg-white/60 dark:bg-gray-800/60 font-medium">
+                    {apt.estado}
+                  </span>
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+
+      {/* Vista desktop: calendario semanal */}
+      <div className="hidden lg:block bg-white dark:bg-gray-900 rounded-lg shadow overflow-hidden">
         {/* Días de la semana */}
-        <div className="grid grid-cols-7 border-b">
+        <div className="grid grid-cols-7 border-b dark:border-gray-700">
           {weekDays.map((day, index) => (
-            <div key={index} className="p-4 text-center border-r last:border-r-0">
-              <p className="font-semibold">
+            <div key={index} className="p-4 text-center border-r dark:border-gray-700 last:border-r-0">
+              <p className="font-semibold dark:text-white">
                 {day.toLocaleDateString('es', { weekday: 'short' })}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {day.toLocaleDateString()}
               </p>
             </div>
@@ -151,8 +185,8 @@ const AgendaPage = () => {
                 return (
                   <div
                     key={`${dayIndex}-${hour}`}
-                    className={`border border-gray-200 p-2 min-h-[100px] cursor-pointer transition-colors ${
-                      appointment ? getStatusColor(appointment.estado) : 'hover:bg-gray-50'
+                    className={`border border-gray-200 dark:border-gray-700 p-2 min-h-[100px] cursor-pointer transition-colors ${
+                      appointment ? getStatusColor(appointment.estado) : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }`}
                     onClick={() => {
                       if (appointment) {
@@ -161,11 +195,11 @@ const AgendaPage = () => {
                       }
                     }}
                   >
-                    <p className="text-xs text-gray-500 mb-1">{hour}:00</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{hour}:00</p>
                     {appointment && (
                       <div className="text-sm">
-                        <p className="font-medium">{appointment.paciente?.nombre}</p>
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="font-medium dark:text-white">{appointment.paciente?.nombre}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                           {appointment.estado}
                         </p>
                       </div>
@@ -180,12 +214,12 @@ const AgendaPage = () => {
 
       {/* Panel de acciones lateral */}
       {showActions && selectedSlot && (
-        <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-xl p-6 overflow-y-auto">
+        <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-gray-900 shadow-xl p-6 overflow-y-auto z-50">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">Detalles de la cita</h3>
+            <h3 className="text-lg font-semibold dark:text-white">Detalles de la cita</h3>
             <button
               onClick={() => setShowActions(false)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl"
             >
               ✕
             </button>
@@ -193,21 +227,21 @@ const AgendaPage = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-600">Paciente</label>
-              <p className="text-lg">{selectedSlot.paciente?.nombre}</p>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Paciente</label>
+              <p className="text-lg dark:text-white">{selectedSlot.paciente?.nombre}</p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600">Fecha y hora</label>
-              <p>{new Date(selectedSlot.fechaHora).toLocaleString()}</p>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Fecha y hora</label>
+              <p className="dark:text-white">{new Date(selectedSlot.fechaHora).toLocaleString()}</p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600">Estado actual</label>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Estado actual</label>
               <p className={`inline-block px-2 py-1 rounded text-sm ${
-                selectedSlot.estado === 'confirmada' ? 'bg-blue-100 text-blue-800' :
-                selectedSlot.estado === 'pendiente' ? 'bg-orange-100 text-orange-800' :
-                'bg-gray-100 text-gray-800'
+                selectedSlot.estado === 'confirmada' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400' :
+                selectedSlot.estado === 'pendiente'  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-400' :
+                'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
               }`}>
                 {selectedSlot.estado}
               </p>
