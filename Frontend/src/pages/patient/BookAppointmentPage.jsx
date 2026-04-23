@@ -31,26 +31,26 @@ function buildFechaHora(diaNombre, horario) {
 // ── ConfirmModal ──────────────────────────────────────────────────
 function ConfirmModal({ doctor, seleccion, motivo, onCancel, onConfirm, loading, error }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-sm">
-        <h3 className="text-lg font-semibold mb-3">Confirmar reserva</h3>
-        <p className="text-sm text-gray-600 mb-1">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg p-6 w-full sm:max-w-sm">
+        <h3 className="text-lg font-semibold mb-3 dark:text-white">Confirmar reserva</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
           <span className="font-medium">Médico:</span> {doctor?.nombre}
         </p>
-        <p className="text-sm text-gray-600 mb-1">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
           <span className="font-medium">Día:</span> {seleccion?.dia}
         </p>
-        <p className="text-sm text-gray-600 mb-1">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
           <span className="font-medium">Horario:</span> {seleccion?.horario}
         </p>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           <span className="font-medium">Motivo:</span> {motivo}
         </p>
-        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+        {error && <p className="text-red-500 dark:text-red-400 text-sm mb-3">{error}</p>}
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm hover:bg-gray-50"
+            className="flex-1 border border-gray-300 dark:border-gray-600 dark:text-gray-300 rounded px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Cancelar
           </button>

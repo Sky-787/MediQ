@@ -130,13 +130,16 @@ export default function SearchDoctorsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Buscar Médico</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user?.nombre} ({user?.rol})</span>
+      {/* Header */}
+      <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">Buscar Médico</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
+            {user?.nombre} ({user?.rol})
+          </span>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Cerrar sesión</span>
@@ -144,26 +147,27 @@ export default function SearchDoctorsPage() {
         </div>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="text"
           placeholder="Especialidad"
           value={especialidad}
           onChange={e => setEspecialidad(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500"
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500 text-sm"
         />
         <input
           type="date"
           value={fecha}
           onChange={e => setFecha(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500"
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-sm w-full sm:w-auto"
         />
       </div>
 
-      {error && <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
+      {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-4 rounded-lg mb-4 text-sm">{error}</div>}
 
       {doctors.length === 0 ? (
-        <div className="text-center text-gray-500 py-12">No se encontraron médicos.</div>
+        <div className="text-center text-gray-500 dark:text-gray-400 py-12 text-sm">No se encontraron médicos.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {doctors.map(doc => (
