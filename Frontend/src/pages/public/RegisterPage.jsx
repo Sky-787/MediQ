@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerSchema } from '../../utils/validationSchemas';
-import axiosInstance from '../../api/axiosInstance';
-import AuthFeedback from '../../components/ui/AuthFeedback';
+import { useAuthStore } from '../../stores/useAuthStore';
+import useToastStore from '../../stores/useToastStore';
 
 const calculateStrength = (password) => {
   if (!password) return { text: '', color: 'bg-gray-200', width: 'w-0' };
@@ -21,8 +21,8 @@ const calculateStrength = (password) => {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [serverError, setServerError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const registerAction = useAuthStore((state) => state.register);
+  const showToast = useToastStore((state) => state.showToast);
 
   const {
     register,
@@ -39,20 +39,16 @@ export default function RegisterPage() {
 
   const onSubmit = async (data) => {
     try {
-      setServerError(null);
-      await axiosInstance.post('/auth/register', data);
+      await registerAction(data);
+      showToast('¡Usuario creado exitosamente! Redirigiendo al login...', 'success');
       
-      // Mostrar mensaje de éxito
-      setSuccessMessage('¡Usuario creado exitosamente! Redirigiendo al login...');
-      
-      // Redirigir al login después de 2 segundos
       setTimeout(() => {
         navigate('/login');
       }, 2000);
       
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error || 'Error al crear la cuenta. Inténtalo de nuevo.';
-      setServerError(msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -67,13 +63,6 @@ export default function RegisterPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           
-          {/* Mensaje de éxito */}
-          {successMessage && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md text-sm text-center">
-              {successMessage}
-            </div>
-          )}
-          
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             
             <input type="hidden" {...register('rol')} />
@@ -85,7 +74,6 @@ export default function RegisterPage() {
                   type="text"
                   {...register('nombre')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                  disabled={successMessage}
                 />
                 {errors.nombre && <p className="mt-1 text-sm text-red-600">{errors.nombre.message}</p>}
               </div>
@@ -98,7 +86,6 @@ export default function RegisterPage() {
                   type="email"
                   {...register('email')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                  disabled={successMessage}
                 />
                 {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
               </div>
@@ -111,12 +98,11 @@ export default function RegisterPage() {
                   type="password"
                   {...register('contrasena')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                  disabled={successMessage}
                 />
                 {errors.contrasena && <p className="mt-1 text-sm text-red-600">{errors.contrasena.message}</p>}
               </div>
               
-              {watchPassword && !successMessage && (
+              {watchPassword && (
                 <div className="mt-2">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-500">Fortaleza: {strength.text}</span>
@@ -135,21 +121,18 @@ export default function RegisterPage() {
                   type="password"
                   {...register('confirmarContrasena')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                  disabled={successMessage}
                 />
                 {errors.confirmarContrasena && <p className="mt-1 text-sm text-red-600">{errors.confirmarContrasena.message}</p>}
               </div>
             </div>
 
-            <AuthFeedback message={serverError} type="error" />
-
             <div>
               <button
                 type="submit"
-                disabled={isSubmitting || successMessage}
+                disabled={isSubmitting}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-teal-400 disabled:cursor-not-allowed transition-colors"
               >
-                {isSubmitting ? 'Creando cuenta...' : successMessage ? 'Registro exitoso' : 'Crear cuenta'}
+                {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
               </button>
             </div>
           </form>
@@ -168,4 +151,4 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
+}
