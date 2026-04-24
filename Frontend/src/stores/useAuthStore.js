@@ -54,6 +54,27 @@ export const useAuthStore = create((set, get) => ({
         err.response?.data?.error ||
         'Error al iniciar sesión. Verifica tus credenciales.'
       set({ error: mensaje })
+      throw err
+    }
+  },
+
+  /**
+   * register(data)
+   * Llama POST /auth/register con los datos del formulario.
+   * NO setea isAuthenticated ni user — el registro no inicia sesión.
+   */
+  register: async (data) => {
+    try {
+      set({ isLoading: true, error: null })
+      await axiosInstance.post('/auth/register', data)
+      set({ isLoading: false })
+    } catch (err) {
+      const mensaje =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Error al crear la cuenta. Intentá de nuevo.'
+      set({ error: mensaje, isLoading: false })
+      throw err
     }
   },
 
