@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginSchema } from '../../utils/validationSchemas';
 import { useAuthStore } from '../../stores/useAuthStore';
 import AuthFeedback from '../../components/ui/AuthFeedback';
+import ToastNotification from '../../components/shared/ToastNotification';
 
 function getRouteByRole(role) {
   switch (role) {
@@ -22,6 +23,7 @@ function getRouteByRole(role) {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, error, clearError, user, isAuthenticated } = useAuthStore();
+  const [toast, setToast] = useState({ show: false, message: '', type: 'error' });
 
   const {
     register,
@@ -38,7 +40,20 @@ export default function LoginPage() {
   }, [isAuthenticated, user, navigate]);
 
   const onSubmit = async (data) => {
-    await login(data.email, data.contrasena);
+    try {
+      await login(data.email, data.contrasena);
+    } catch (error) {
+      if (error.response) {
+        // El mensaje de credenciales/servidor ya vive en useAuthStore.error y lo pinta AuthFeedback.
+        return;
+      }
+
+      setToast({
+        show: true,
+        message: 'No pudimos conectar con el servidor. Verifica tu conexión e inténtalo de nuevo.',
+        type: 'error',
+      });
+    }
   };
 
   const emailReg = register('email');
@@ -46,6 +61,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {toast.show && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+        />
+      )}
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-teal-700">
           Iniciar Sesión en MediQ
