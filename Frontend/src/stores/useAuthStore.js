@@ -48,12 +48,13 @@ export const useAuthStore = create((set, get) => ({
       } else {
         set({ user: data, isAuthenticated: true })
       }
-    } catch (err) {
+    } catch (error) {
       const mensaje =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
         'Error al iniciar sesión. Verifica tus credenciales.'
       set({ error: mensaje })
+      throw error
     }
   },
 
