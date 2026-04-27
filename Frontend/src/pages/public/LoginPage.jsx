@@ -44,7 +44,6 @@ export default function LoginPage() {
       await login(data.email, data.contrasena);
     } catch (error) {
       if (error.response) {
-        // El mensaje de credenciales/servidor ya vive en useAuthStore.error y lo pinta AuthFeedback.
         return;
       }
 
@@ -60,7 +59,7 @@ export default function LoginPage() {
   const passwordReg = register('contrasena');
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {toast.show && (
         <ToastNotification
           message={toast.message}
@@ -70,16 +69,16 @@ export default function LoginPage() {
       )}
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-teal-700">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-teal-700 dark:text-teal-400">
           Iniciar Sesión en MediQ
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
               <div className="mt-1">
                 <input
                   type="email"
@@ -88,7 +87,7 @@ export default function LoginPage() {
                     clearError();
                     emailReg.onChange(e);
                   }}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
                 {errors.email && (
                   <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
@@ -97,7 +96,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
               <div className="mt-1">
                 <input
                   type="password"
@@ -106,7 +105,7 @@ export default function LoginPage() {
                     clearError();
                     passwordReg.onChange(e);
                   }}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
                 {errors.contrasena && (
                   <p className="mt-2 text-sm text-red-600">{errors.contrasena.message}</p>
@@ -120,7 +119,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-teal-400 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-teal-400 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? 'Ingresando...' : 'Iniciar Sesión'}
               </button>
@@ -129,9 +128,9 @@ export default function LoginPage() {
 
           <div className="mt-6">
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 text-gray-500">
+              <span className="px-2 text-gray-500 dark:text-gray-400">
                 ¿Eres un usuario nuevo?{' '}
-                <Link to="/register" className="font-medium text-teal-600 hover:text-teal-500">
+                <Link to="/register" className="font-medium text-teal-600 dark:text-teal-400 hover:text-teal-500">
                   Regístrate aquí
                 </Link>
               </span>
