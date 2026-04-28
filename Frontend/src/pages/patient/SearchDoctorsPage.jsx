@@ -5,6 +5,7 @@ import { User, LogOut } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuthStore } from '../../stores/useAuthStore';
 import useDoctorStore from '../../stores/useDoctorStore';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 
 function AvailabilityGrid({ doctor, onClose }) {
   const navigate = useNavigate();
@@ -117,12 +118,11 @@ export default function SearchDoctorsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && doctors.length === 0) {
     return (
       <div className="max-w-4xl mx-auto py-6 px-4">
-        <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-700 border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Cargando médicos...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
       </div>
     );

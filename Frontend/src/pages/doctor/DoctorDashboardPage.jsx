@@ -5,6 +5,7 @@ import { Calendar, Clock, Bell, Users, ChevronRight, LogOut } from 'lucide-react
 import { useAuthStore } from '../../stores/useAuthStore';
 import useApi from '../../hooks/useApi';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 import CustomCard from '../../components/ui/CustomCard';
 
 const DoctorDashboardPage = () => {
@@ -90,8 +91,21 @@ const DoctorDashboardPage = () => {
     },
   ];
 
-  if (loading) {
-    return <LoadingSpinner fullPage />;
+  if (loading && nextAppointments.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-6">
+              <SkeletonCard />
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-4">
+          {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      </div>
+    );
   }
 
   return (
