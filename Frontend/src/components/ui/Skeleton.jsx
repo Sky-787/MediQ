@@ -1,28 +1,22 @@
 // src/components/ui/Skeleton.jsx
 
-/**
- * Skeleton — bloque de placeholder animado para estados de carga.
- *
- * Props:
- *  - className : clases Tailwind adicionales (ancho, alto, forma, etc.)
- *
- * Uso básico:
- *   <Skeleton className="h-6 w-48 rounded" />
- *
- * Uso compuesto (tarjeta):
- *   <SkeletonCard />
- */
+export function Skeleton({ className = '', variant = 'text' }) {
+  const variants = {
+    text:   'h-4 w-full rounded',
+    title:  'h-6 w-3/4 rounded',
+    avatar: 'h-10 w-10 rounded-full',
+    card:   'h-32 w-full rounded-2xl',
+    button: 'h-9 w-24 rounded-xl',
+  };
 
-export function Skeleton({ className = '' }) {
   return (
-    <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+    <div className={`animate-pulse bg-gray-200 dark:bg-gray-700 ${variants[variant]} ${className}`} />
   );
 }
 
-/** Tarjeta skeleton genérica — imita el layout de una AppointmentCard / DoctorCard */
 export function SkeletonCard() {
   return (
-    <div className="bg-white rounded-lg shadow p-5 flex flex-col gap-3">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-2">
           <Skeleton className="h-4 w-40" />
