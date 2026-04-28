@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 import Navbar from './components/ui/Navbar'
 import { useAuthStore } from './stores/useAuthStore'
+import useToastStore from './stores/useToastStore'
+import ToastNotification from './components/shared/ToastNotification'
 
 // Páginas públicas
 import LandingPage from './pages/public/LandingPage'
@@ -41,6 +43,7 @@ function PublicLayout() {
 
 export default function App() {
   const checkSession = useAuthStore((state) => state.checkSession)
+  const { toast, hideToast } = useToastStore()
 
   // Verificar sesión UNA SOLA VEZ al arrancar la app
   useEffect(() => {
@@ -89,6 +92,15 @@ export default function App() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+
+      {/* ── Toast Global ── */}
+      {toast.show && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </BrowserRouter>
   )
 }

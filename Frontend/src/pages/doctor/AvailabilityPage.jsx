@@ -1,17 +1,16 @@
-﻿// src/pages/doctor/AvailabilityPage.jsx
+// src/pages/doctor/AvailabilityPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Save } from 'lucide-react';
-import useApi from '../../hooks/useApi';
-import ToastNotification from '../../components/shared/ToastNotification';
+import useDoctorStore from '../../stores/useDoctorStore';
+import useToastStore from '../../stores/useToastStore';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const AvailabilityPage = () => {
-  const { fetchData, loading } = useApi();
+  const { updateAvailability, isLoading } = useDoctorStore();
+  const { showToast } = useToastStore();
   const [availability, setAvailability] = useState([]);
-  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [saving, setSaving] = useState(false);
 
-  // Días de la semana
   const weekDays = [
     { id: 1, name: 'Lunes' },
     { id: 2, name: 'Martes' },
@@ -22,18 +21,16 @@ const AvailabilityPage = () => {
     { id: 0, name: 'Domingo' },
   ];
 
-  // Inicializar disponibilidad
   useEffect(() => {
     const initialAvailability = weekDays.map(day => ({
       dayId: day.id,
       dayName: day.name,
-      active: day.id !== 0 && day.id !== 6, // Activo solo lunes-viernes por defecto
+      active: day.id !== 0 && day.id !== 6,
       slots: day.id !== 0 && day.id !== 6 ? ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'] : [],
     }));
     setAvailability(initialAvailability);
   }, []);
 
-  // Toggle día activo/inactivo
   const toggleDay = (dayId) => {
     setAvailability(prev =>
       prev.map(day =>
@@ -44,20 +41,17 @@ const AvailabilityPage = () => {
     );
   };
 
-  // Agregar slot a un día
   const addSlot = (dayId) => {
     setAvailability(prev =>
       prev.map(day => {
         if (day.dayId === dayId) {
-          const newSlot = '12:00'; // Slot por defecto
-          return { ...day, slots: [...day.slots, newSlot].sort() };
+          return { ...day, slots: [...day.slots, '12:00'].sort() };
         }
         return day;
       })
     );
   };
 
-  // Eliminar slot de un día
   const removeSlot = (dayId, slotToRemove) => {
     setAvailability(prev =>
       prev.map(day =>
@@ -68,7 +62,6 @@ const AvailabilityPage = () => {
     );
   };
 
-  // Actualizar hora de un slot
   const updateSlot = (dayId, oldSlot, newSlot) => {
     setAvailability(prev =>
       prev.map(day => {
@@ -81,11 +74,9 @@ const AvailabilityPage = () => {
     );
   };
 
-  // Guardar cambios
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Formatear disponibilidad para la API
       const formattedAvailability = availability
         .filter(day => day.active && day.slots.length > 0)
         .map(day => ({
@@ -93,21 +84,16 @@ const AvailabilityPage = () => {
           slots: day.slots,
         }));
 
-      await fetchData({
-        url: '/doctors/profile',
-        method: 'PUT',
-        data: { disponibilidad: formattedAvailability },
-      });
-
-      setToast({ show: true, message: 'Disponibilidad guardada exitosamente', type: 'success' });
-    } catch (error) {
-      setToast({ show: true, message: 'Error al guardar disponibilidad', type: 'error' });
+      await updateAvailability(formattedAvailability);
+      showToast('Disponibilidad guardada exitosamente', 'success');
+    } catch {
+      showToast('Error al guardar disponibilidad', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  if (isLoading && !saving) {
     return <LoadingSpinner fullPage />;
   }
 
@@ -177,14 +163,6 @@ const AvailabilityPage = () => {
           ))}
         </div>
       </div>
-
-      {toast.show && (
-        <ToastNotification
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
     </div>
   );
 };

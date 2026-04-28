@@ -5,19 +5,20 @@ import {
   Calendar, Users, LogOut, Filter, Edit, XCircle, FileText, BarChart3,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import useToastStore from '../../stores/useToastStore';
 import useApi from '../../hooks/useApi';
 import CustomCard from '../../components/ui/CustomCard';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Pagination from '../../components/shared/Pagination';
 import EmptyState from '../../components/shared/EmptyState';
 import ModalWrapper from '../../components/shared/ModalWrapper';
-import ToastNotification from '../../components/shared/ToastNotification';
 import Badge from '../../components/ui/Badge';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { fetchData, loading: apiLoading } = useApi();
+  const { showToast } = useToastStore();
 
   const isAuthorized = isAuthenticated && user?.rol === 'admin';
 
@@ -27,7 +28,6 @@ const DashboardPage = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
   const isMounted = useRef(true);
   const hasRedirected = useRef(false);
@@ -53,10 +53,6 @@ const DashboardPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const showToastMessage = useCallback((message, type) => {
-    if (isMounted.current) setToast({ show: true, message, type });
-  }, []);
-
   const loadDashboardData = useCallback(async () => {
     if (!isAuthorized) return;
     try {
@@ -77,18 +73,18 @@ const DashboardPage = () => {
       setAppointments(appointmentsData.data || []);
       setPagination(prev => ({ ...prev, total: appointmentsData.total || 0 }));
     } catch (error) {
-      if (isMounted.current) showToastMessage('Error al cargar los datos del dashboard', error.message);
+      if (isMounted.current) showToast('Error al cargar los datos del dashboard', 'error');
     }
-  }, [fetchData, pagination.page, pagination.limit, filters, showToastMessage, isAuthorized]);
+  }, [fetchData, pagination.page, pagination.limit, filters, showToast, isAuthorized]);
 
   const handleLogout = useCallback(async () => {
     try {
       await logout();
       navigate('/login', { replace: true });
-    } catch (error) {
-      showToastMessage('Error al cerrar sesión', error.message);
+    } catch {
+      showToast('Error al cerrar sesión', 'error');
     }
-  }, [logout, navigate, showToastMessage]);
+  }, [logout, navigate, showToast]);
 
   const handleNavigateToUsers = () => { window.location.href = '/admin/users'; };
   const handleNavigateToReports = () => { window.location.href = '/admin/reports'; };
@@ -125,13 +121,13 @@ const DashboardPage = () => {
     try {
       await fetchData({ url: `/appointments/${appointmentId}/status`, method: 'PATCH', data: { estado: 'cancelada' } });
       if (isMounted.current) {
-        showToastMessage('Cita cancelada exitosamente', 'success');
+        showToast('Cita cancelada exitosamente', 'success');
         await loadDashboardData();
       }
-    } catch (error) {
-      if (isMounted.current) showToastMessage('Error al cancelar la cita', error.message);
+    } catch {
+      if (isMounted.current) showToast('Error al cancelar la cita', 'error');
     }
-  }, [fetchData, showToastMessage, loadDashboardData]);
+  }, [fetchData, showToast, loadDashboardData]);
 
   const getStatusBadge = useCallback((status) => {
     const variants = { confirmada: 'success', pendiente: 'warning', cancelada: 'danger', completada: 'info' };
@@ -146,23 +142,23 @@ const DashboardPage = () => {
   if (apiLoading && !appointments.length) return <LoadingSpinner fullPage />;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap gap-3 justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Panel de Administración</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Bienvenido, {user?.nombre} ·{' '}
-                <span className="font-semibold text-teal-700">({user?.rol})</span>
+                <span className="font-semibold text-teal-700 dark:text-teal-400">({user?.rol})</span>
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={handleNavigateToReports} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              <button onClick={handleNavigateToReports} className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm">
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">Reportes</span>
               </button>
-              <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-sm">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Cerrar sesión</span>
               </button>
@@ -171,59 +167,63 @@ const DashboardPage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToReports}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Stats — 2 columnas en móvil, 4 en desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4 sm:p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToReports}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Reportes</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.todayAppointments}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Reportes</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2">{stats.todayAppointments}</p>
               </div>
-              <div className="bg-teal-100 p-3 rounded-full">
-                <Calendar className="w-6 h-6 text-teal-700" />
+              <div className="bg-teal-100 dark:bg-teal-900/40 p-2 sm:p-3 rounded-full">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-teal-700 dark:text-teal-400" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToUsers}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-4 sm:p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToUsers}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total de usuarios</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalPatients}</p>
-                <p className="text-xs text-gray-500 mt-1">Total usuarios: {stats.totalUsers}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Usuarios</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-2">{stats.totalPatients}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Total: {stats.totalUsers}</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Users className="w-6 h-6 text-purple-700" />
+              <div className="bg-purple-100 dark:bg-purple-900/40 p-2 sm:p-3 rounded-full">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-700 dark:text-purple-400" />
               </div>
             </div>
           </div>
         </div>
 
-        <CustomCard className="p-6 mb-8">
+        {/* Filtros */}
+        <CustomCard className="p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Filtros de Citas</h2>
+            <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Filtros de Citas</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <input type="text" placeholder="Médico" value={filters.doctor} onChange={e => handleFilterChange('doctor', e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
-            <input type="text" placeholder="Especialidad" value={filters.specialty} onChange={e => handleFilterChange('specialty', e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
-            <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            <input type="text" placeholder="Médico" value={filters.doctor} onChange={e => handleFilterChange('doctor', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <input type="text" placeholder="Especialidad" value={filters.specialty} onChange={e => handleFilterChange('specialty', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm">
               <option value="">Todos los estados</option>
               <option value="pendiente">Pendiente</option>
               <option value="confirmada">Confirmada</option>
               <option value="cancelada">Cancelada</option>
               <option value="completada">Completada</option>
             </select>
-            <input type="date" value={filters.startDate} onChange={e => handleFilterChange('startDate', e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
-            <input type="date" value={filters.endDate} onChange={e => handleFilterChange('endDate', e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
+            <input type="date" value={filters.startDate} onChange={e => handleFilterChange('startDate', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <input type="date" value={filters.endDate} onChange={e => handleFilterChange('endDate', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
           </div>
         </CustomCard>
 
+        {/* Tabla de citas */}
         <CustomCard className="overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Todas las citas</h2>
-            <button onClick={handleNavigateToReports} className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-2 justify-between items-center">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Todas las citas</h2>
+            <button onClick={handleNavigateToReports} className="flex items-center gap-2 text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700">
               <FileText className="w-4 h-4" />
-              Ver reportes completos
+              <span className="hidden sm:inline">Ver reportes completos</span>
+              <span className="sm:hidden">Reportes</span>
             </button>
           </div>
           {appointments.length === 0 ? (
@@ -231,32 +231,32 @@ const DashboardPage = () => {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
+                <table className="w-full min-w-[600px]">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Médico</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Paciente</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Médico</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {appointments.map(apt => (
-                      <tr key={apt._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm text-gray-900">{apt._id?.slice(-6) || 'N/A'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{apt.paciente?.nombre || 'N/A'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{apt.medico?.nombre || 'N/A'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{apt.fechaHora ? formatDate(apt.fechaHora) : 'N/A'}</td>
-                        <td className="px-6 py-4">{apt.estado ? getStatusBadge(apt.estado) : 'N/A'}</td>
-                        <td className="px-6 py-4">
+                      <tr key={apt._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200">{apt._id?.slice(-6) || 'N/A'}</td>
+                        <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200">{apt.paciente?.nombre || 'N/A'}</td>
+                        <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200">{apt.medico?.nombre || 'N/A'}</td>
+                        <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200 whitespace-nowrap">{apt.fechaHora ? formatDate(apt.fechaHora) : 'N/A'}</td>
+                        <td className="px-4 sm:px-6 py-4">{apt.estado ? getStatusBadge(apt.estado) : 'N/A'}</td>
+                        <td className="px-4 sm:px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <button onClick={() => { setSelectedAppointment(apt); setShowAssignModal(true); }} className="p-1 text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded transition-colors" title="Editar cita">
+                            <button onClick={() => { setSelectedAppointment(apt); setShowAssignModal(true); }} className="p-1 text-gray-600 hover:text-teal-700 hover:bg-teal-50 dark:text-gray-400 dark:hover:text-teal-400 dark:hover:bg-teal-900/30 rounded transition-colors" title="Editar cita">
                               <Edit className="w-4 h-4" />
                             </button>
                             {apt.estado !== 'cancelada' && apt.estado !== 'completada' && (
-                              <button onClick={() => handleCancelAppointment(apt._id)} className="p-1 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors" title="Cancelar cita">
+                              <button onClick={() => handleCancelAppointment(apt._id)} className="p-1 text-gray-600 hover:text-red-700 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-colors" title="Cancelar cita">
                                 <XCircle className="w-4 h-4" />
                               </button>
                             )}
@@ -296,10 +296,6 @@ const DashboardPage = () => {
           </div>
         )}
       </ModalWrapper>
-
-      {toast.show && (
-        <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
-      )}
     </div>
   );
 };
