@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useAppointmentStore from '../../stores/useAppointmentStore';
 import useToastStore from '../../stores/useToastStore';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 
 const TABS = ['Próximas', 'Pasadas', 'Canceladas'];
 
@@ -138,7 +138,9 @@ export default function MyAppointmentsPage() {
       </div>
 
       {isLoading && appointments.length === 0 ? (
-        <LoadingSpinner />
+        <div className="flex flex-col gap-4">
+          {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center text-gray-500 py-12">
           No hay citas en esta sección.
