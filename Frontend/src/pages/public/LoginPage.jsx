@@ -20,6 +20,19 @@ function getRouteByRole(role) {
   }
 }
 
+function getRouteByRole(role) {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'medico':
+      return '/doctor';
+    case 'paciente':
+      return '/patient/search';
+    default:
+      return '/';
+  }
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, error, clearError, user, isAuthenticated } = useAuthStore();
