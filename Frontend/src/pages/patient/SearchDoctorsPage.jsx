@@ -34,7 +34,9 @@ function AvailabilityGrid({ doctor, onClose }) {
         </h3>
 
         {disponibilidad.length === 0 ? (
-          <p className="text-gray-500 text-sm">Sin disponibilidad registrada.</p>
+          <p className="text-gray-500 text-sm">
+            Sin disponibilidad registrada.
+          </p>
         ) : (
           <div className="flex flex-col gap-2">
             {disponibilidad.map((item, i) => (
@@ -83,7 +85,9 @@ function DoctorCard({ doctor, onVerDisponibilidad }) {
 
         <div>
           <p className="font-semibold text-gray-800">{doctor.nombre}</p>
-          <p className="text-sm text-gray-500">{doctor.especialidad}</p>
+          <p className="text-sm text-gray-500">
+            {doctor.especialidad}
+          </p>
         </div>
       </div>
 
@@ -139,11 +143,14 @@ export default function SearchDoctorsPage() {
       try {
         await fetchDoctors(params);
       } catch (err) {
-        const message = !err.response
-          ? 'Error de conexión. Verificá tu red e intentá de nuevo.'
-          : 'Error al cargar los médicos.';
-
-        showToast(message, 'error');
+        if (!err.response) {
+          showToast(
+            'Error de conexión. Verificá tu red e intentá de nuevo.',
+            'error'
+          );
+        } else {
+          showToast('Error al cargar los médicos.', 'error');
+        }
       }
     };
 
@@ -173,7 +180,6 @@ export default function SearchDoctorsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
-      {/* Header */}
       <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
           Buscar Médico
@@ -194,20 +200,19 @@ export default function SearchDoctorsPage() {
         </div>
       </div>
 
-      {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="text"
           placeholder="Especialidad"
           value={especialidad}
-          onChange={(e) => setEspecialidad(e.target.value)}
+          onChange={e => setEspecialidad(e.target.value)}
           className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500 text-sm"
         />
 
         <input
           type="date"
           value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
+          onChange={e => setFecha(e.target.value)}
           className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-sm w-full sm:w-auto"
         />
       </div>
@@ -224,7 +229,7 @@ export default function SearchDoctorsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {doctors.map((doc) => (
+          {doctors.map(doc => (
             <DoctorCard
               key={doc._id}
               doctor={doc}
