@@ -5,6 +5,7 @@ import { User, LogOut } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
 import { useAuthStore } from '../../stores/useAuthStore';
 import useDoctorStore from '../../stores/useDoctorStore';
+import useToastStore from '../../stores/useToastStore';
 
 function AvailabilityGrid({ doctor, onClose }) {
   const navigate = useNavigate();
@@ -96,17 +97,27 @@ export default function SearchDoctorsPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { doctors, isLoading, error, fetchDoctors } = useDoctorStore();
+  const { showToast } = useToastStore();
 
   const [especialidad, setEspecialidad] = useState('');
   const [fecha, setFecha] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
 
   useEffect(() => {
-    const params = {};
-    if (especialidad) params.especialidad = especialidad;
-    if (fecha) params.fecha = fecha;
-    fetchDoctors(params);
-  }, [especialidad, fecha, fetchDoctors]);
+    const loadDoctors = async () => {
+      const params = {};
+      if (especialidad) params.especialidad = especialidad;
+      if (fecha) params.fecha = fecha;
+      try {
+        await fetchDoctors(params);
+      } catch (err) {
+        if (!err.response) {
+          showToast('Error de conexión. Verificá tu red e intentá de nuevo.', 'error');
+        }
+      }
+    };
+    loadDoctors();
+  }, [especialidad, fecha, fetchDoctors, showToast]);
 
   const handleLogout = async () => {
     try {
