@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import useAppointmentStore from '../../stores/useAppointmentStore';
 import useToastStore from '../../stores/useToastStore';
+import Modal from '../../components/ui/Modal';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 
 const TABS = ['Próximas', 'Pasadas', 'Canceladas'];
@@ -16,32 +17,44 @@ function horasRestantes(fechaHora) {
   return (new Date(fechaHora) - new Date()) / (1000 * 60 * 60);
 }
 
+// ── CancelModal (función interna) ─────────────────────────────────
+function CancelModal({ isOpen, motivo, onMotivoChange, onConfirm, onClose, isLoading, error }) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Cancelar cita">
+      <textarea
+        value={motivo}
+        onChange={e => onMotivoChange(e.target.value)}
+        placeholder="Motivo de cancelación (opcional)"
+        rows={3}
+        className="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2 focus:outline-none focus:border-teal-500 resize-none"
+      />
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      <div className="flex gap-3 mt-4">
+        <button onClick={onClose} className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm hover:bg-gray-50">
+          Volver
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={isLoading}
+          className="flex-1 bg-red-600 text-white rounded px-4 py-2 text-sm hover:bg-red-700 disabled:opacity-50"
+        >
+          {isLoading ? 'Cancelando...' : 'Confirmar cancelación'}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 // ── AppointmentCard ───────────────────────────────────────────────
-function AppointmentCard({ appointment }) {
+function AppointmentCard({ appointment, onCancel, onEdit }) {
   const especialidad   = appointment.doctorId?.especialidad   || 'Especialidad no disponible';
   const registroMedico = appointment.doctorId?.registroMedico || null;
   const fecha  = new Date(appointment.fechaHora);
   const estado = appointment.estado || 'pendiente';
   const horas  = horasRestantes(appointment.fechaHora);
   const isFuture = horas > 0;
-
-  const renderAcciones = () => {
-    if (!isFuture || estado === 'cancelada' || estado === 'completada') return null;
-
-    return (
-      <div className="flex flex-col gap-2 mt-1">
-        {horas < 24 ? (
-          <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">
-            🚫 No es posible cancelar con menos de 24 horas de anticipación. Contacta directamente al consultorio.
-          </div>
-        ) : (
-          <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded p-2">
-            ⚙️ Módulo de cancelación y reprogramación no disponible aún — en desarrollo.
-          </div>
-        )}
-      </div>
-    );
-  };
+  const isCancellable = isFuture && ['pendiente', 'confirmada'].includes(estado) && horas > 24;
+  const isEditable = isFuture && estado === 'pendiente';
 
   return (
     <div className="bg-white rounded-lg shadow p-5 flex flex-col gap-3">
@@ -78,15 +91,53 @@ function AppointmentCard({ appointment }) {
         </div>
       )}
 
-      {renderAcciones()}
+      {/* Acciones */}
+      <div className="flex flex-col gap-2 mt-1">
+        {!isFuture || estado === 'cancelada' || estado === 'completada' ? null : (
+          <>
+            {horas < 24 ? (
+              <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">
+                🚫 No es posible cancelar con menos de 24 horas de anticipación. Contacta directamente al consultorio.
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                {isCancellable && (
+                  <button
+                    onClick={() => onCancel(appointment._id)}
+                    className="flex-1 border border-red-400 text-red-600 rounded px-3 py-1 text-sm hover:bg-red-50"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                {isEditable && (
+                  <button
+                    onClick={() => onEdit(appointment._id, appointment.motivo ?? '')}
+                    className="flex-1 border border-teal-500 text-teal-700 rounded px-3 py-1 text-sm hover:bg-teal-50"
+                  >
+                    Editar
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
 // ── MyAppointmentsPage ────────────────────────────────────────────
 export default function MyAppointmentsPage() {
-  const { appointments, isLoading, fetchAppointments } = useAppointmentStore();
+  const { appointments, isLoading, error, fetchAppointments, cancelAppointment, updateAppointment } = useAppointmentStore();
+  const { showToast } = useToastStore();
+
   const [activeTab, setActiveTab] = useState('Próximas');
+  const [cancelModal, setCancelModal] = useState({
+    isOpen: false,
+    appointmentId: null,
+    motivo: '',
+    error: null,
+  });
 
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
@@ -107,6 +158,31 @@ export default function MyAppointmentsPage() {
     Próximas:   appointments.filter(a => new Date(a.fechaHora) >= ahora && a.estado !== 'cancelada').length,
     Pasadas:    appointments.filter(a => new Date(a.fechaHora) <  ahora && a.estado !== 'cancelada').length,
     Canceladas: appointments.filter(a => a.estado === 'cancelada').length,
+  };
+
+  // ── Handlers cancelación ─────────────────────────────────────────
+  const handleOpenCancel = (id) => {
+    setCancelModal({ isOpen: true, appointmentId: id, motivo: '', error: null });
+  };
+
+  const handleConfirmCancel = async () => {
+    try {
+      await cancelAppointment(cancelModal.appointmentId, cancelModal.motivo);
+      setCancelModal({ isOpen: false, appointmentId: null, motivo: '', error: null });
+      showToast('Cita cancelada exitosamente', 'success');
+    } catch (err) {
+      if (!err.response) {
+        // NetworkError: cerrar modal + toast de red
+        setCancelModal({ isOpen: false, appointmentId: null, motivo: '', error: null });
+        showToast('Error de conexión. Verificá tu red e intentá de nuevo.', 'error');
+      } else {
+        // ServerError: error inline dentro del modal, modal permanece abierto
+        setCancelModal(prev => ({
+          ...prev,
+          error: err.response.data?.message || 'Error al cancelar la cita',
+        }));
+      }
+    }
   };
 
   return (
@@ -148,10 +224,30 @@ export default function MyAppointmentsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {filtered.map(a => (
-            <AppointmentCard key={a._id} appointment={a} />
+            <AppointmentCard
+              key={a._id}
+              appointment={a}
+              onCancel={handleOpenCancel}
+              onEdit={() => {}}
+            />
           ))}
         </div>
       )}
+
+      {error && (
+        <div className="text-center text-red-500 py-4 text-sm">{error}</div>
+      )}
+
+      <CancelModal
+        isOpen={cancelModal.isOpen}
+        motivo={cancelModal.motivo}
+        onMotivoChange={(v) => setCancelModal(prev => ({ ...prev, motivo: v }))}
+        onConfirm={handleConfirmCancel}
+        onClose={() => setCancelModal({ isOpen: false, appointmentId: null, motivo: '', error: null })}
+        isLoading={isLoading}
+        error={cancelModal.error}
+      />
     </div>
   );
 }
+
