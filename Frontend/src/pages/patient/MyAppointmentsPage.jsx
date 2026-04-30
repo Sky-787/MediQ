@@ -45,6 +45,35 @@ function CancelModal({ isOpen, motivo, onMotivoChange, onConfirm, onClose, isLoa
   );
 }
 
+// ── EditModal (función interna) ───────────────────────────────────
+function EditModal({ isOpen, motivo, onMotivoChange, onConfirm, onClose, isLoading, error }) {
+  const canConfirm = motivo.trim().length >= 3;
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Editar motivo de cita">
+      <textarea
+        value={motivo}
+        onChange={e => onMotivoChange(e.target.value)}
+        placeholder="Motivo de la consulta"
+        rows={3}
+        className="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2 focus:outline-none focus:border-teal-500 resize-none"
+      />
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      <div className="flex gap-3 mt-4">
+        <button onClick={onClose} className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm hover:bg-gray-50">
+          Cancelar
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={isLoading || !canConfirm}
+          className="flex-1 bg-teal-600 text-white rounded px-4 py-2 text-sm hover:bg-teal-700 disabled:opacity-50"
+        >
+          {isLoading ? 'Guardando...' : 'Guardar cambios'}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 // ── AppointmentCard ───────────────────────────────────────────────
 function AppointmentCard({ appointment, onCancel, onEdit }) {
   const especialidad   = appointment.doctorId?.especialidad   || 'Especialidad no disponible';
@@ -138,6 +167,12 @@ export default function MyAppointmentsPage() {
     motivo: '',
     error: null,
   });
+  const [editModal, setEditModal] = useState({
+    isOpen: false,
+    appointmentId: null,
+    motivo: '',
+    error: null,
+  });
 
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
@@ -180,6 +215,29 @@ export default function MyAppointmentsPage() {
         setCancelModal(prev => ({
           ...prev,
           error: err.response.data?.message || 'Error al cancelar la cita',
+        }));
+      }
+    }
+  };
+
+  // ── Handlers edición ─────────────────────────────────────────────
+  const handleOpenEdit = (id, motivoActual) => {
+    setEditModal({ isOpen: true, appointmentId: id, motivo: motivoActual, error: null });
+  };
+
+  const handleConfirmEdit = async () => {
+    try {
+      await updateAppointment(editModal.appointmentId, { motivo: editModal.motivo });
+      setEditModal({ isOpen: false, appointmentId: null, motivo: '', error: null });
+      showToast('Cita actualizada exitosamente', 'success');
+    } catch (err) {
+      if (!err.response) {
+        setEditModal(prev => ({ ...prev, isOpen: false }));
+        showToast('Error de conexión. Verificá tu red e intentá de nuevo.', 'error');
+      } else {
+        setEditModal(prev => ({
+          ...prev,
+          error: err.response.data?.message || 'Error al actualizar la cita',
         }));
       }
     }
@@ -228,7 +286,7 @@ export default function MyAppointmentsPage() {
               key={a._id}
               appointment={a}
               onCancel={handleOpenCancel}
-              onEdit={() => {}}
+              onEdit={handleOpenEdit}
             />
           ))}
         </div>
@@ -246,6 +304,16 @@ export default function MyAppointmentsPage() {
         onClose={() => setCancelModal({ isOpen: false, appointmentId: null, motivo: '', error: null })}
         isLoading={isLoading}
         error={cancelModal.error}
+      />
+
+      <EditModal
+        isOpen={editModal.isOpen}
+        motivo={editModal.motivo}
+        onMotivoChange={(v) => setEditModal(prev => ({ ...prev, motivo: v }))}
+        onConfirm={handleConfirmEdit}
+        onClose={() => setEditModal({ isOpen: false, appointmentId: null, motivo: '', error: null })}
+        isLoading={isLoading}
+        error={editModal.error}
       />
     </div>
   );
