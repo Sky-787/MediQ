@@ -174,7 +174,18 @@ export default function MyAppointmentsPage() {
     error: null,
   });
 
-  useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        await fetchAppointments();
+      } catch (err) {
+        if (!err.response) {
+          showToast('Error de conexión. Verificá tu red e intentá de nuevo.', 'error');
+        }
+      }
+    };
+    load();
+  }, [fetchAppointments, showToast]);
 
   const ahora = new Date();
 
