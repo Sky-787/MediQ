@@ -3,7 +3,7 @@ import PatientNavbar from '../../components/ui/PatientNavbar';
 
 export default function PatientLayout() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PatientNavbar />
       <main className="mx-auto max-w-7xl p-4 sm:px-6 lg:px-8">
         <Outlet />

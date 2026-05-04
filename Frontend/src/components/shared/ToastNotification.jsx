@@ -28,13 +28,13 @@ const ToastNotification = ({ message, type = 'info', duration = 5000, onClose })
   const getBgColor = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200';
+        return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
       case 'error':
-        return 'bg-red-50 border-red-200';
+        return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
       default:
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
     }
   };
 
@@ -42,10 +42,10 @@ const ToastNotification = ({ message, type = 'info', duration = 5000, onClose })
     <div className="fixed top-4 right-4 z-50 animate-slide-in">
       <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg ${getBgColor()}`}>
         {getIcon()}
-        <p className="text-sm font-medium text-gray-800 max-w-xs">{message}</p>
+        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 max-w-xs">{message}</p>
         <button
           onClick={onClose}
-          className="ml-2 p-1 hover:bg-gray-200 rounded-full transition-colors"
+          className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
           aria-label="Cerrar notificación"
         >
           <X className="w-4 h-4 text-gray-500" />
