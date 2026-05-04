@@ -11,11 +11,11 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AdminNavbar />
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[220px_1fr] lg:px-6">
-        <aside className="h-fit rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <aside className="h-fit rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-sm dark:shadow-lg">
+          <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Navegacion
           </p>
           <nav className="space-y-1">
@@ -27,7 +27,7 @@ const AdminLayout = () => {
                   `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-teal-700 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`
                 }
               >
