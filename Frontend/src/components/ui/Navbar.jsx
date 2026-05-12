@@ -4,6 +4,7 @@ import { Menu } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import ThemeToggle from './ThemeToggle';
 import MobileMenu from './MobileMenu';
+import NotificationsBell from '../shared/NotificationsBell';
 
 function getHomeByRole(role) {
   switch (role) {
@@ -12,6 +13,12 @@ function getHomeByRole(role) {
     case 'paciente': return '/patient/search';
     default:         return '/';
   }
+}
+
+function formatRole(role) {
+  if (!role) return ''
+  const map = { medico: 'Médico', paciente: 'Paciente', admin: 'Administrador' }
+  return map[role] || role
 }
 
 const linkClass = ({ isActive }) =>
@@ -55,6 +62,17 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <NotificationsBell />
+              {/* User badge: nombre + rol */}
+              <div className="hidden sm:flex items-center gap-2 px-2">
+                <div className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-medium">{user?.nombre ? user.nombre.charAt(0).toUpperCase() : 'U'}</div>
+                  <div className="leading-tight">
+                    <div className="text-sm font-medium">{user?.nombre || 'Usuario'}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatRole(user?.rol || user?.role)}</div>
+                  </div>
+                </div>
+              </div>
               <button
                 onClick={handlePanel}
                 className="rounded-md bg-teal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600"
@@ -75,6 +93,7 @@ export default function Navbar() {
         {/* Mobile: ThemeToggle + hamburger */}
         <div className="flex items-center gap-2 sm:hidden">
           <ThemeToggle />
+          <NotificationsBell />
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menú"
@@ -87,6 +106,18 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)}>
+        {/* Mobile: mostrar info de usuario en el drawer */}
+        {isAuthenticated && (
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-medium">{user?.nombre ? user.nombre.charAt(0).toUpperCase() : 'U'}</div>
+              <div>
+                <div className="font-medium">{user?.nombre}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{formatRole(user?.rol || user?.role)}</div>
+              </div>
+            </div>
+          </div>
+        )}
         <NavLink to="/" className={linkClass} onClick={() => setMenuOpen(false)}>Inicio</NavLink>
         {!isAuthenticated ? (
           <>

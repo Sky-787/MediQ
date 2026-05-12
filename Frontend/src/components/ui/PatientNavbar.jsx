@@ -4,6 +4,13 @@ import { Search, CalendarDays, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import ThemeToggle from './ThemeToggle';
 import MobileMenu from './MobileMenu';
+import NotificationsBell from '../shared/NotificationsBell';
+
+function formatRole(role) {
+  if (!role) return ''
+  const map = { medico: 'Médico', paciente: 'Paciente', admin: 'Administrador' }
+  return map[role] || role
+}
 
 const navItems = [
   { path: '/patient/search',       label: 'Buscar Médico', icon: Search },
@@ -56,9 +63,11 @@ export default function PatientNavbar() {
 
           {/* Desktop actions */}
           <div className="hidden sm:flex items-center gap-3">
-            <span className="text-sm text-white/80 dark:text-gray-400 truncate max-w-[140px]">
+            <span className="text-sm text-white/80 dark:text-gray-400 truncate max-w-[120px]">
               {user?.nombre}
             </span>
+            <div className="text-sm text-white/70 dark:text-gray-300 text-xs">{formatRole(user?.rol || user?.role)}</div>
+            <NotificationsBell />
             <ThemeToggle />
             <button
               onClick={handleLogout}
@@ -86,9 +95,10 @@ export default function PatientNavbar() {
       {/* Mobile drawer */}
       <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)}>
         {/* Saludo */}
-        <p className="px-3 py-1 text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
-          {user?.nombre}
-        </p>
+        <div className="px-3 py-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate">{user?.nombre}</p>
+          <p className="text-xs text-gray-400">{formatRole(user?.rol || user?.role)}</p>
+        </div>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
