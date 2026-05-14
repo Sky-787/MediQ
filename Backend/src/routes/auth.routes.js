@@ -1,8 +1,7 @@
 const { Router } = require('express');
-const { body } = require('express-validator');
-const { register, login, logout, getMe } = require('../controllers/auth.controller');
+const { register, login, logout, getMe } = require('../controllers/auth');
 const { authenticate } = require('../middlewares/auth.middleware');
-const { validateRequest } = require('../utils/validators');
+const { validateRegister, validateLogin } = require('../middlewares/validations');
 
 const router = Router();
 
@@ -18,6 +17,7 @@ const router = Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [nombre, email, contrasena]
  *             properties:
  *               nombre:
  *                 type: string
@@ -25,21 +25,16 @@ const router = Router();
  *                 type: string
  *               contrasena:
  *                 type: string
+ *               rol:
+ *                 type: string
+ *                 enum: [paciente, medico, admin]
  *     responses:
  *       201:
- *         description: Usuario creado
+ *         description: Usuario creado exitosamente
+ *       409:
+ *         description: El email ya está registrado
  */
-router.post(
-  '/register',
-  [
-    body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio'),
-    body('email').isEmail().withMessage('Email inválido').normalizeEmail(),
-    body('contrasena').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
-    body('rol').optional().isIn(['paciente', 'medico', 'admin']).withMessage('Rol inválido'),
-    validateRequest,
-  ],
-  register
-);
+router.post('/register', validateRegister, register);
 
 /**
  * @swagger
@@ -53,6 +48,7 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [email, contrasena]
  *             properties:
  *               email:
  *                 type: string
@@ -61,16 +57,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Login exitoso
+ *       401:
+ *         description: Credenciales inválidas
  */
-router.post(
-  '/login',
-  [
-    body('email').isEmail().withMessage('Email inválido').normalizeEmail(),
-    body('contrasena').notEmpty().withMessage('La contraseña es obligatoria'),
-    validateRequest,
-  ],
-  login
-);
+router.post('/login', validateLogin, login);
 
 /**
  * @swagger
@@ -78,9 +68,11 @@ router.post(
  *   post:
  *     summary: Cerrar sesión
  *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
  *     responses:
  *       200:
- *         description: OK
+ *         description: Sesión cerrada correctamente
  */
 router.post('/logout', authenticate, logout);
 
@@ -88,11 +80,15 @@ router.post('/logout', authenticate, logout);
  * @swagger
  * /auth/me:
  *   get:
- *     summary: Mi perfil
+ *     summary: Obtener perfil del usuario autenticado
  *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
  *     responses:
  *       200:
- *         description: OK
+ *         description: Datos del usuario autenticado
+ *       401:
+ *         description: No autenticado
  */
 router.get('/me', authenticate, getMe);
 
