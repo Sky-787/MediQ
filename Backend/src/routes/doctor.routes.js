@@ -1,7 +1,6 @@
 const { Router } = require('express');
 const { getDoctors, getDoctorById, createDoctor, updateDoctor, deleteDoctor } = require('../controllers/doctor.controller');
-const { authenticate } = require('../middlewares/auth.middleware');
-const { authorize } = require('../middlewares/role.middleware');
+const { authenticate, authorize } = require('../middlewares');
 
 const router = Router();
 

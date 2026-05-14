@@ -1,7 +1,6 @@
 const { Router } = require('express');
 const { getAppointments, getAppointmentById, createAppointment, updateAppointmentStatus, deleteAppointment } = require('../controllers/appointment.controller');
-const { authenticate } = require('../middlewares/auth.middleware');
-const { authorize } = require('../middlewares/role.middleware');
+const { authenticate, authorize } = require('../middlewares');
 
 const router = Router();
 

@@ -2,14 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-
-const { CORS_ORIGIN, NODE_ENV } = require('./config/env');
-const routes = require('./routes');
-const { errorHandler, notFound } = require('./middlewares/error.middleware');
-
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const path = require('path');
+
+const { CORS_ORIGIN, NODE_ENV } = require('./config/env');
+const routes = require('./routes');
+const { errorHandler, notFound } = require('./middlewares');
 
 const app = express();
 
@@ -32,7 +31,6 @@ if (NODE_ENV !== 'test') {
 
 app.use('/api', routes);
 
-// Swagger Schema Docs
 const swaggerDocument = YAML.load(path.join(__dirname, '../swagger-spec.yml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
