@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema(
       enum: ['paciente', 'medico', 'admin'],
       default: 'paciente',
     },
+
+    estado: {
+      type: String,
+      enum: ['activo', 'inactivo'],
+      default: 'activo',
+    },
   },
   {
     timestamps: true,
@@ -40,15 +46,20 @@ const userSchema = new mongoose.Schema(
 
 // Hash antes de guardar
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('contrasena')) return next();
+  if (!this.isModified('contrasena')) {
+    return next();
+  }
 
   const salt = await bcrypt.genSalt(10);
   this.contrasena = await bcrypt.hash(this.contrasena, salt);
+
   next();
 });
 
 // Comparar contraseña
-userSchema.methods.compararContrasena = async function (contrasenaIngresada) {
+userSchema.methods.compararContrasena = async function (
+  contrasenaIngresada
+) {
   return bcrypt.compare(contrasenaIngresada, this.contrasena);
 };
 
@@ -59,7 +70,10 @@ userSchema.methods.toPublicJSON = function () {
     nombre: this.nombre,
     email: this.email,
     rol: this.rol,
+    estado: this.estado,
   };
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports =
+  mongoose.models.User ||
+  mongoose.model('User', userSchema);
