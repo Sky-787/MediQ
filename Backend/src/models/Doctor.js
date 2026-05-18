@@ -26,6 +26,15 @@ const doctorSchema = new mongoose.Schema(
       {
         dia: {
           type: String,
+          enum: [
+            'Lunes',
+            'Martes',
+            'Miércoles',
+            'Jueves',
+            'Viernes',
+            'Sábado',
+            'Domingo',
+          ],
           required: true,
         },
 
