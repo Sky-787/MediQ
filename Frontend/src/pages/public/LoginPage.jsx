@@ -119,7 +119,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-teal-400 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:cursor-not-allowed transition-colors"
+                style={{ backgroundColor: isSubmitting ? '#5eead4' : '#0d9488' }}
               >
                 {isSubmitting ? 'Ingresando...' : 'Iniciar Sesión'}
               </button>

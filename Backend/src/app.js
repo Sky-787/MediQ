@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const { CORS_ORIGIN, NODE_ENV } = require('./config/env');
 const routes = require('./routes');
@@ -28,6 +29,22 @@ app.use(cookieParser());
 if (NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
+
+// Rate limiting para rutas de autenticación (protección contra fuerza bruta)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // ventana de 15 minutos
+  max: 20,                   // máx 20 intentos por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Demasiados intentos. Intenta de nuevo en 15 minutos.',
+  },
+  skip: () => NODE_ENV === 'test', // no limitar en tests
+});
+
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 app.use('/api', routes);
 
