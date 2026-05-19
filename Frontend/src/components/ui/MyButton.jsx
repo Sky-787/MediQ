@@ -5,7 +5,7 @@ const MyButton = ({ label, onClick, variant = "primary", isLoading, disabled }) 
   const variants = {
     primary: "bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500",
     secondary: "bg-blue-900 text-white hover:bg-blue-950 dark:bg-blue-700 dark:hover:bg-blue-600",
-    outline: "border border-teal-700 text-teal-700 hover:bg-teal-100 dark:border-teal-400 dark:text-teal-400 dark:hover:bg-teal-900",
+    outline: "border border-white text-white hover:bg-white hover:text-teal-700 dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-teal-700",
   };
   return (
     <button
