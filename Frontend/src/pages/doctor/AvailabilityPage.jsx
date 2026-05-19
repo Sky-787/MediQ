@@ -5,21 +5,21 @@ import useDoctorStore from '../../stores/useDoctorStore';
 import useToastStore from '../../stores/useToastStore';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
+const weekDays = [
+  { id: 1, name: 'Lunes' },
+  { id: 2, name: 'Martes' },
+  { id: 3, name: 'Miércoles' },
+  { id: 4, name: 'Jueves' },
+  { id: 5, name: 'Viernes' },
+  { id: 6, name: 'Sábado' },
+  { id: 0, name: 'Domingo' },
+];
+
 const AvailabilityPage = () => {
   const { updateAvailability, isLoading } = useDoctorStore();
   const { showToast } = useToastStore();
   const [availability, setAvailability] = useState([]);
   const [saving, setSaving] = useState(false);
-
-  const weekDays = [
-    { id: 1, name: 'Lunes' },
-    { id: 2, name: 'Martes' },
-    { id: 3, name: 'Miércoles' },
-    { id: 4, name: 'Jueves' },
-    { id: 5, name: 'Viernes' },
-    { id: 6, name: 'Sábado' },
-    { id: 0, name: 'Domingo' },
-  ];
 
   useEffect(() => {
     const initialAvailability = weekDays.map(day => ({
