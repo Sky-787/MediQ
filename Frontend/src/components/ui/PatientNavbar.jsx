@@ -1,5 +1,5 @@
-﻿import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Search, CalendarDays, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import ThemeToggle from './ThemeToggle';
@@ -46,10 +46,13 @@ export default function PatientNavbar() {
     <nav className="bg-teal-700 dark:bg-gray-900 border-b border-teal-800 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
-          {/* Logo */}
-          <span className="text-white dark:text-teal-400 font-bold text-lg shrink-0">
+          {/* Logo → Landing Page */}
+          <Link
+            to="/"
+            className="text-white dark:text-teal-400 font-bold text-lg shrink-0 hover:opacity-80 transition-opacity"
+          >
             MediQ
-          </span>
+          </Link>
 
           {/* Desktop links */}
           <div className="hidden sm:flex items-center gap-2">
@@ -74,7 +77,7 @@ export default function PatientNavbar() {
               className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 dark:bg-gray-700 dark:hover:bg-gray-600 text-white dark:text-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
             >
               <LogOut className="w-4 h-4" />
-              <span>Salir</span>
+              <span>Cerrar sesión</span>
             </button>
           </div>
 
