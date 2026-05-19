@@ -1,5 +1,5 @@
-﻿import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Bell, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import ThemeToggle from './ThemeToggle';
@@ -35,10 +35,13 @@ const DoctorNavbar = () => {
     <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <h2 className="text-xl font-bold text-teal-700 dark:text-teal-400 shrink-0">
+          {/* Logo → Landing Page */}
+          <Link
+            to="/"
+            className="text-xl font-bold text-teal-700 dark:text-teal-400 shrink-0 hover:opacity-80 transition-opacity"
+          >
             MediQ · Médicos
-          </h2>
+          </Link>
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-4">
