@@ -72,7 +72,7 @@ const DashboardPage = () => {
       });
       setAppointments(appointmentsData.data || []);
       setPagination(prev => ({ ...prev, total: appointmentsData.total || 0 }));
-    } catch (error) {
+    } catch {
       if (isMounted.current) showToast('Error al cargar los datos del dashboard', 'error');
     }
   }, [fetchData, pagination.page, pagination.limit, filters, showToast, isAuthorized]);

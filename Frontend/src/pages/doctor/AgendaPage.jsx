@@ -35,12 +35,13 @@ const AgendaPage = () => {
   const loadAppointments = useCallback(async () => {
     try {
       await fetchAppointments();
-    } catch (error) {
+    } catch {
       setToast({ show: true, message: 'Error al cargar citas', type: 'error' });
     }
   }, [fetchAppointments]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAppointments();
   }, [loadAppointments]);
 
@@ -82,7 +83,7 @@ const AgendaPage = () => {
       await updateAppointment(appointmentId, { estado: 'confirmada' });
       setToast({ show: true, message: 'Cita confirmada', type: 'success' });
       setShowActions(false);
-    } catch (error) {
+    } catch {
       setToast({ show: true, message: 'Error al confirmar', type: 'error' });
     }
   };
@@ -93,7 +94,7 @@ const AgendaPage = () => {
       await cancelAppointment(appointmentId);
       setToast({ show: true, message: 'Cita cancelada', type: 'success' });
       setShowActions(false);
-    } catch (error) {
+    } catch {
       setToast({ show: true, message: 'Error al cancelar', type: 'error' });
     }
   };

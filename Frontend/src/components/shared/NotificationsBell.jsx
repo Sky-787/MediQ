@@ -17,7 +17,7 @@ function relativeTime(dateString) {
 }
 
 export default function NotificationsBell({ pollInterval = 45000 }) {
-  const { user, isAuthenticated, isLoading } = useAuthStore()
+  const { user, isAuthenticated } = useAuthStore()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState([])
   const [unread, setUnread] = useState(0)
@@ -51,7 +51,7 @@ export default function NotificationsBell({ pollInterval = 45000 }) {
       if (!mounted.current) return
       setItems(mapped)
       setUnread(mapped.filter(i => !i.read).length)
-    } catch (err) {
+    } catch {
       // Fallback: mock datos locales (no romper si el backend no implementa endpoint)
       if (!mounted.current) return
       const mock = [

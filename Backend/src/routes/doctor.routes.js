@@ -32,4 +32,4 @@ router.delete(
   deleteDoctor
 );
 
-module.exports = router;s
+module.exports = router;

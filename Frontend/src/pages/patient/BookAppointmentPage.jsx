@@ -35,7 +35,7 @@ function ConfirmModal({ doctor, seleccion, motivo, onCancel, onConfirm, loading,
       <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-lg p-6 w-full sm:max-w-sm">
         <h3 className="text-lg font-semibold mb-3 dark:text-white">Confirmar reserva</h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-          <span className="font-medium">Médico:</span> {doctor?.nombre}
+          <span className="font-medium">Médico:</span> {doctor?.userId?.nombre || doctor?.nombre || 'Médico'}
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
           <span className="font-medium">Día:</span> {seleccion?.dia}
@@ -91,12 +91,16 @@ export default function BookAppointmentPage() {
         const data = res.data?.data || res.data;
         setDoctor(data);
         const disp = data?.disponibilidad || [];
-        setDisponibilidad(Array.isArray(disp) ? disp : []);
+        const normalized = (Array.isArray(disp) ? disp : []).map(item => ({
+          ...item,
+          horario: item.horario || (item.horas && item.horas.length > 0 ? item.horas[0] : '')
+        }));
+        setDisponibilidad(normalized);
       })
       .catch(() => {
         showToast('Error al cargar información del médico', 'error');
       });
-  }, [doctorId]);
+  }, [doctorId, showToast]);
 
   const handleConfirm = async () => {
     try {
@@ -156,7 +160,7 @@ export default function BookAppointmentPage() {
                     }`}
                   >
                     <span className="font-semibold">{item.dia}</span>
-                    <span className="ml-2 opacity-80">{item.horario}</span>
+                    {item.horario && <span className="ml-2 opacity-80">{item.horario}</span>}
                   </button>
                 );
               })}
@@ -168,7 +172,7 @@ export default function BookAppointmentPage() {
         <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-3">
           <h3 className="font-semibold text-gray-700">Resumen de la cita</h3>
           <p className="text-sm text-gray-600">
-            <span className="font-medium">Médico:</span> {doctor?.nombre || '...'}
+            <span className="font-medium">Médico:</span> {doctor?.userId?.nombre || doctor?.nombre || '...'}
           </p>
           <p className="text-sm text-gray-600">
             <span className="font-medium">Especialidad:</span> {doctor?.especialidad || '...'}

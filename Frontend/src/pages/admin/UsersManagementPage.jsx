@@ -12,11 +12,10 @@ const UsersManagementPage = () => {
   const { fetchData, loading } = useApi();
   const { showToast } = useToastStore();
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('todos');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [pagination, setPagination] = useState({ page: 1, limit: 10 });
   const [selectedUser, setSelectedUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRole, setEditingRole] = useState({ userId: null, role: '' });
@@ -25,35 +24,21 @@ const UsersManagementPage = () => {
     try {
       const data = await fetchData({ url: '/users' });
       setUsers(data.data || []);
-      setPagination(prev => ({ ...prev, total: data.data?.length || 0 }));
     } catch {
       showToast('Error al cargar usuarios', 'error');
     }
   }, [fetchData, showToast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers();
   }, [loadUsers]);
 
+  // Reset page when filters change
   useEffect(() => {
-    let filtered = [...users];
-    if (searchTerm) {
-      filtered = filtered.filter(user =>
-        user.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (roleFilter !== 'todos') {
-      filtered = filtered.filter(user => user.rol === roleFilter);
-    }
-    if (statusFilter !== 'todos') {
-      filtered = filtered.filter(user =>
-        statusFilter === 'activo' ? user.activo : !user.activo
-      );
-    }
-    setFilteredUsers(filtered);
-    setPagination(prev => ({ ...prev, total: filtered.length }));
-  }, [users, searchTerm, roleFilter, statusFilter]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, [searchTerm, roleFilter, statusFilter]);
 
   const handleRoleChange = async (userId, newRole) => {
     try {
@@ -65,6 +50,16 @@ const UsersManagementPage = () => {
       showToast('Error al actualizar rol', 'error');
     }
   };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = !searchTerm || 
+      user.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'todos' || user.rol === roleFilter;
+    const matchesStatus = statusFilter === 'todos' || 
+      (statusFilter === 'activo' ? user.activo : !user.activo);
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   const paginatedUsers = filteredUsers.slice(
     (pagination.page - 1) * pagination.limit,
@@ -178,7 +173,7 @@ const UsersManagementPage = () => {
                 </tbody>
               </table>
             </div>
-            <Pagination total={pagination.total} page={pagination.page} limit={pagination.limit} onPageChange={(newPage) => setPagination(prev => ({ ...prev, page: newPage }))} />
+            <Pagination total={filteredUsers.length} page={pagination.page} limit={pagination.limit} onPageChange={(newPage) => setPagination(prev => ({ ...prev, page: newPage }))} />
           </>
         )}
       </div>
