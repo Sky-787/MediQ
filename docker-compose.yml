@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongo:
     image: mongo:7
@@ -7,9 +5,44 @@ services:
     restart: always
     ports:
       - "27017:27017"
-
     volumes:
       - mongo_data:/data/db
+    networks:
+      - mediq-network
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: mediq-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    networks:
+      - mediq-network
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+    container_name: mediq-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - mediq-network
+
+networks:
+  mediq-network:
+    driver: bridge
 
 volumes:
   mongo_data:
