@@ -1,0 +1,46 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+    paths:
+      - 'Backend/**'
+  pull_request:
+    branches: [ "main", "develop" ]
+    paths:
+      - 'Backend/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: './Backend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Tests
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/mediq_test
+          JWT_SECRET: supersecret_test_key_12345
+        run: npm test
