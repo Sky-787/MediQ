@@ -78,10 +78,12 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
               <div className="mt-1">
                 <input
+                  id="email"
                   type="email"
+                  autoComplete="email"
                   {...emailReg}
                   onChange={(e) => {
                     clearError();
@@ -96,10 +98,12 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
+              <label htmlFor="contrasena" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
               <div className="mt-1">
                 <input
+                  id="contrasena"
                   type="password"
+                  autoComplete="current-password"
                   {...passwordReg}
                   onChange={(e) => {
                     clearError();

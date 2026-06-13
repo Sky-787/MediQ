@@ -68,10 +68,12 @@ export default function RegisterPage() {
             <input type="hidden" {...register('rol')} />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre completo</label>
+              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre completo</label>
               <div className="mt-1">
                 <input
+                  id="nombre"
                   type="text"
+                  autoComplete="name"
                   {...register('nombre')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
@@ -80,10 +82,12 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
               <div className="mt-1">
                 <input
+                  id="email"
                   type="email"
+                  autoComplete="email"
                   {...register('email')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
@@ -92,10 +96,12 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
+              <label htmlFor="contrasena" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
               <div className="mt-1">
                 <input
+                  id="contrasena"
                   type="password"
+                  autoComplete="new-password"
                   {...register('contrasena')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
@@ -115,10 +121,12 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmar Contraseña</label>
+              <label htmlFor="confirmarContrasena" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmar Contraseña</label>
               <div className="mt-1">
                 <input
+                  id="confirmarContrasena"
                   type="password"
+                  autoComplete="new-password"
                   {...register('confirmarContrasena')}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                 />
