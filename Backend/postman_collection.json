@@ -1,21 +1,53 @@
 {
 	"info": {
 		"name": "MediQ API - Collection",
-		"description": "Colección completa de endpoints del backend de MediQ — Sistema de Agendamiento Médico.\n\nVariable {{baseUrl}} = http://localhost:5000/api\n\nFlujo recomendado:\n1. Register → crear usuario\n2. Login → autenticarse (cookie HttpOnly)\n3. Probar los demás endpoints",
+		"description": "Colección completa de endpoints del backend de MediQ — Sistema de Agendamiento Médico.\n\nVariable {{baseUrl}} = http://localhost:5000/api\n\nFlujo recomendado:\n1. Register → crear usuario con rol 'medico'\n2. Login → autenticarse (cookie HttpOnly se setea automáticamente)\n3. Crear Doctor → asociar el userId del médico registrado\n4. Probar los demás endpoints\n\nNota: La autenticación usa cookies HTTP-only. Postman las maneja automáticamente si 'Automatically follow redirects' y 'Send cookies' están habilitados.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Auth",
+			"name": "Health",
 			"item": [
 				{
-					"name": "Register",
+					"name": "Health Check",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test('Status code is 201', () => { pm.response.to.have.status(201); });"
+									"pm.test('API is running', () => { pm.response.to.have.status(200); });",
+									"pm.test('Response has success field', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/health"
+					}
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register (Paciente)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', () => { pm.response.to.have.status(201); });",
+									"pm.test('Returns user data', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.success).to.be.true;",
+									"  pm.expect(json.data).to.have.property('_id');",
+									"  pm.collectionVariables.set('userId', json.data._id);",
+									"});"
 								]
 							}
 						}
@@ -23,20 +55,110 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@email.com\",\n  \"contrasena\": \"123456\",\n  \"rol\": \"paciente\"\n}"
+							"raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@email.com\",\n  \"contrasena\": \"secreto123\",\n  \"rol\": \"paciente\"\n}"
+						},
+						"url": "{{baseUrl}}/auth/register"
+					}
+				},
+				{
+					"name": "Register (Médico)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', () => { pm.response.to.have.status(201); });",
+									"pm.test('Saves doctorUserId', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.success).to.be.true;",
+									"  pm.collectionVariables.set('doctorUserId', json.data._id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Dra. María García\",\n  \"email\": \"maria.garcia@mediq.com\",\n  \"contrasena\": \"secreto123\",\n  \"rol\": \"medico\"\n}"
+						},
+						"url": "{{baseUrl}}/auth/register"
+					}
+				},
+				{
+					"name": "Register (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Admin MediQ\",\n  \"email\": \"admin@mediq.com\",\n  \"contrasena\": \"secreto123\",\n  \"rol\": \"admin\"\n}"
 						},
 						"url": "{{baseUrl}}/auth/register"
 					}
 				},
 				{
 					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });",
+									"pm.test('Returns authenticated user', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.success).to.be.true;",
+									"  pm.expect(json.data).to.have.property('rol');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"juan@email.com\",\n  \"contrasena\": \"secreto123\"\n}"
+						},
+						"url": "{{baseUrl}}/auth/login"
+					}
+				},
+				{
+					"name": "Get Me (Perfil autenticado)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });",
+									"pm.test('Returns user profile', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.data).to.have.property('email');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": "{{baseUrl}}/auth/me"
+					}
+				},
+				{
+					"name": "Logout",
 					"event": [
 						{
 							"listen": "test",
@@ -49,207 +171,290 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"juan@email.com\",\n  \"contrasena\": \"123456\"\n}"
-						},
-						"url": "{{baseUrl}}/auth/login"
-					}
-				},
-				{
-					"name": "Logout",
-					"request": {
-						"method": "POST",
 						"url": "{{baseUrl}}/auth/logout"
-					}
-				},
-				{
-					"name": "Mi Perfil (Get Me)",
-					"request": {
-						"method": "GET",
-						"url": "{{baseUrl}}/auth/me"
 					}
 				}
 			]
 		},
 		{
 			"name": "Users",
-			"description": "Gestión de usuarios. La mayoría requiere rol admin.",
+			"description": "Gestión de usuarios. Requiere autenticación. Listar y eliminar requieren rol admin.",
 			"item": [
 				{
 					"name": "Listar Usuarios (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });",
+									"pm.test('Returns array of users', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/users"
+						"url": {
+							"raw": "{{baseUrl}}/users?page=1&limit=10",
+							"query": [
+								{ "key": "page",  "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						}
 					}
 				},
 				{
 					"name": "Obtener Usuario por ID",
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/users/:id"
+						"url": "{{baseUrl}}/users/{{userId}}"
 					}
 				},
 				{
-					"name": "Actualizar Usuario",
+					"name": "Actualizar Usuario (nombre/email)",
 					"request": {
 						"method": "PUT",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Nombre Actualizado\",\n  \"email\": \"nuevo@email.com\"\n}"
+							"raw": "{\n  \"nombre\": \"Juan Pérez Actualizado\",\n  \"email\": \"juan.nuevo@email.com\"\n}"
 						},
-						"url": "{{baseUrl}}/users/:id"
+						"url": "{{baseUrl}}/users/{{userId}}"
 					}
 				},
 				{
 					"name": "Eliminar Usuario (Admin)",
 					"request": {
 						"method": "DELETE",
-						"url": "{{baseUrl}}/users/:id"
+						"url": "{{baseUrl}}/users/{{userId}}"
 					}
 				}
 			]
 		},
 		{
 			"name": "Doctors",
-			"description": "Gestión de médicos.",
+			"description": "Gestión de médicos. Listar y obtener por ID son públicos. Crear y eliminar requieren rol admin.",
 			"item": [
 				{
-					"name": "Listar Médicos",
+					"name": "Listar Médicos (público)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });",
+									"pm.test('Returns array of doctors', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.data).to.be.an('array');",
+									"  if (json.data.length > 0) {",
+									"    pm.collectionVariables.set('doctorId', json.data[0]._id);",
+									"  }",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/doctors"
+						"url": {
+							"raw": "{{baseUrl}}/doctors?page=1&limit=10",
+							"query": [
+								{ "key": "page",         "value": "1" },
+								{ "key": "limit",        "value": "10" },
+								{ "key": "especialidad", "value": "", "disabled": true }
+							]
+						}
 					}
 				},
 				{
-					"name": "Obtener Médico por ID",
+					"name": "Obtener Médico por ID (público)",
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/doctors/:id"
+						"url": "{{baseUrl}}/doctors/{{doctorId}}"
 					}
 				},
 				{
 					"name": "Crear Médico (Admin)",
+					"description": "Requiere que el userId ya exista en la colección Users con rol 'medico'. Primero registrar el usuario con rol medico y usar su _id aquí.",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', () => { pm.response.to.have.status(201); });",
+									"pm.test('Saves doctorId', () => {",
+									"  const json = pm.response.json();",
+									"  if (json.data && json.data._id) {",
+									"    pm.collectionVariables.set('doctorId', json.data._id);",
+									"  }",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Dra. María García\",\n  \"email\": \"maria.garcia@mediq.com\",\n  \"contrasena\": \"123456\",\n  \"especialidad\": \"Medicina General\",\n  \"telefono\": \"3001234567\"\n}"
+							"raw": "{\n  \"userId\": \"{{doctorUserId}}\",\n  \"especialidad\": \"Medicina General\",\n  \"registroMedico\": \"RM-00123\",\n  \"disponibilidad\": []\n}"
 						},
 						"url": "{{baseUrl}}/doctors"
 					}
 				},
 				{
-					"name": "Actualizar Médico",
+					"name": "Actualizar Médico (Admin o propio médico)",
 					"request": {
 						"method": "PUT",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"especialidad\": \"Pediatría\",\n  \"telefono\": \"3009876543\"\n}"
+							"raw": "{\n  \"especialidad\": \"Pediatría\",\n  \"registroMedico\": \"RM-00456\",\n  \"disponibilidad\": [\n    { \"dia\": \"Lunes\", \"horario\": \"08:00-12:00\" },\n    { \"dia\": \"Miércoles\", \"horario\": \"14:00-18:00\" }\n  ]\n}"
 						},
-						"url": "{{baseUrl}}/doctors/:id"
+						"url": "{{baseUrl}}/doctors/{{doctorId}}"
 					}
 				},
 				{
 					"name": "Eliminar Médico (Admin)",
 					"request": {
 						"method": "DELETE",
-						"url": "{{baseUrl}}/doctors/:id"
+						"url": "{{baseUrl}}/doctors/{{doctorId}}"
 					}
 				}
 			]
 		},
 		{
 			"name": "Appointments",
-			"description": "Gestión de citas médicas.",
+			"description": "Gestión de citas médicas. Requiere autenticación. El campo fechaHora debe ser ISO 8601.",
 			"item": [
 				{
-					"name": "Listar Citas",
+					"name": "Listar Citas (filtradas por rol)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });",
+									"pm.test('Returns array of appointments', () => {",
+									"  const json = pm.response.json();",
+									"  pm.expect(json.data).to.be.an('array');",
+									"  if (json.data.length > 0) {",
+									"    pm.collectionVariables.set('appointmentId', json.data[0]._id);",
+									"  }",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/appointments"
+						"url": {
+							"raw": "{{baseUrl}}/appointments?page=1&limit=10",
+							"query": [
+								{ "key": "page",  "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						}
 					}
 				},
 				{
 					"name": "Obtener Cita por ID",
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/appointments/:id"
+						"url": "{{baseUrl}}/appointments/{{appointmentId}}"
 					}
 				},
 				{
 					"name": "Crear Cita (Paciente/Admin)",
+					"description": "fechaHora debe ser ISO 8601. motivo mínimo 10 caracteres. doctorId es el _id del documento Doctor (no del User).",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', () => { pm.response.to.have.status(201); });",
+									"pm.test('Saves appointmentId', () => {",
+									"  const json = pm.response.json();",
+									"  if (json.data && json.data._id) {",
+									"    pm.collectionVariables.set('appointmentId', json.data._id);",
+									"  }",
+									"});"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"doctorId\": \"ID_DEL_DOCTOR\",\n  \"fecha\": \"2026-04-01\",\n  \"hora\": \"10:00\",\n  \"motivo\": \"Consulta general\"\n}"
+							"raw": "{\n  \"doctorId\": \"{{doctorId}}\",\n  \"fechaHora\": \"2026-05-10T10:00:00.000Z\",\n  \"motivo\": \"Consulta general por dolor de cabeza persistente\"\n}"
 						},
 						"url": "{{baseUrl}}/appointments"
 					}
 				},
 				{
 					"name": "Cambiar Estado de Cita (Médico/Admin)",
+					"description": "estados válidos: pendiente | confirmada | cancelada | completada",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "PATCH",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" }
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"status\": \"confirmada\"\n}"
+							"raw": "{\n  \"estado\": \"confirmada\"\n}"
 						},
-						"url": "{{baseUrl}}/appointments/:id/status"
+						"url": "{{baseUrl}}/appointments/{{appointmentId}}/status"
 					}
 				},
 				{
-					"name": "Eliminar Cita (Admin)",
+					"name": "Eliminar Cita",
 					"request": {
 						"method": "DELETE",
-						"url": "{{baseUrl}}/appointments/:id"
+						"url": "{{baseUrl}}/appointments/{{appointmentId}}"
 					}
 				}
 			]
 		},
 		{
 			"name": "Reports",
-			"description": "Reportes del sistema (Admin).",
+			"description": "Reportes estadísticos. Requieren autenticación y rol admin.",
 			"item": [
 				{
-					"name": "Reporte de Ocupación",
+					"name": "Reporte de Ocupación por Médico",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"url": "{{baseUrl}}/reports/ocupacion"
@@ -257,6 +462,16 @@
 				},
 				{
 					"name": "Reporte por Especialidad",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"url": "{{baseUrl}}/reports/especialidades"
@@ -264,40 +479,38 @@
 				},
 				{
 					"name": "Reporte por Período",
-					"request": {
-						"method": "GET",
-						"url": "{{baseUrl}}/reports/periodo"
-					}
-				}
-			]
-		},
-		{
-			"name": "Health",
-			"item": [
-				{
-					"name": "Health Check",
+					"description": "Parámetros: inicio y fin en formato YYYY-MM-DD",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test('API is running', () => { pm.response.to.have.status(200); });"
+									"pm.test('Status code is 200', () => { pm.response.to.have.status(200); });"
 								]
 							}
 						}
 					],
 					"request": {
 						"method": "GET",
-						"url": "{{baseUrl}}/health"
+						"url": {
+							"raw": "{{baseUrl}}/reports/periodo?inicio=2026-01-01&fin=2026-12-31&page=1&limit=10",
+							"query": [
+								{ "key": "inicio", "value": "2026-01-01" },
+								{ "key": "fin",    "value": "2026-12-31" },
+								{ "key": "page",   "value": "1" },
+								{ "key": "limit",  "value": "10" }
+							]
+						}
 					}
 				}
 			]
 		}
 	],
 	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:5000/api"
-		}
+		{ "key": "baseUrl",       "value": "http://localhost:5000/api" },
+		{ "key": "userId",        "value": "" },
+		{ "key": "doctorUserId",  "value": "" },
+		{ "key": "doctorId",      "value": "" },
+		{ "key": "appointmentId", "value": "" }
 	]
 }

@@ -81,4 +81,58 @@ describe('Appointments Conflict', () => {
     expect(res2.status).toBe(409);
     expect(res2.body.message).toBe('El médico ya tiene una cita en ese horario');
   });
+
+  it('GET /api/appointments debe devolver las citas del paciente (200)', async () => {
+    const res = await request(app)
+      .get('/api/appointments')
+      .set('Cookie', pacienteCookie);
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.body.data[0]).toHaveProperty('_id');
+  });
+
+  it('PATCH /api/appointments/:id/status debe actualizar el estado si es médico (200)', async () => {
+    // Obtener la cita
+    const getRes = await request(app)
+      .get('/api/appointments')
+      .set('Cookie', pacienteCookie);
+    const citaId = getRes.body.data[0]._id;
+
+    // Login doctor
+    const loginDoc = await request(app).post('/api/auth/login').send({
+      email: 'house@test.com', contrasena: '12345678'
+    });
+    const docCookie = loginDoc.headers['set-cookie'];
+
+    const patchRes = await request(app)
+      .patch(`/api/appointments/${citaId}/status`)
+      .set('Cookie', docCookie)
+      .send({ estado: 'confirmada' });
+    
+    expect(patchRes.status).toBe(200);
+    expect(patchRes.body.data.estado).toBe('confirmada');
+  });
+
+  it('DELETE /api/appointments/:id debe eliminar la cita (200)', async () => {
+    // Obtener la cita
+    const getRes = await request(app)
+      .get('/api/appointments')
+      .set('Cookie', pacienteCookie);
+    const citaId = getRes.body.data[0]._id;
+
+    // Crear y login admin directamente por modelo ya que API no permite
+    await User.create({
+      nombre: 'Admin Test', email: 'admin@test.com', contrasena: '12345678', rol: 'admin'
+    });
+    const loginAdmin = await request(app).post('/api/auth/login').send({
+      email: 'admin@test.com', contrasena: '12345678'
+    });
+    const adminCookie = loginAdmin.headers['set-cookie'];
+
+    const delRes = await request(app)
+      .delete(`/api/appointments/${citaId}`)
+      .set('Cookie', adminCookie);
+    
+    expect(delRes.status).toBe(200);
+  });
 });

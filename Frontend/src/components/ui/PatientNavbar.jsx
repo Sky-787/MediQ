@@ -1,35 +1,127 @@
-// src/components/ui/PatientNavbar.jsx
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Search, CalendarDays, LogOut, Menu } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import ThemeToggle from './ThemeToggle';
+import MobileMenu from './MobileMenu';
+import NotificationsBell from '../shared/NotificationsBell';
+
+function formatRole(role) {
+  if (!role) return ''
+  const map = { medico: 'Médico', paciente: 'Paciente', admin: 'Administrador' }
+  return map[role] || role
+}
+
+const navItems = [
+  { path: '/patient/search',       label: 'Buscar Médico', icon: Search },
+  { path: '/patient/appointments', label: 'Mis Citas',     icon: CalendarDays },
+];
+
+const itemClass = ({ isActive }) =>
+  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+    isActive
+      ? 'bg-teal-800 text-white dark:bg-teal-600'
+      : 'text-white/90 hover:bg-teal-800 dark:text-gray-300 dark:hover:bg-gray-800'
+  }`;
+
+const mobileItemClass = ({ isActive }) =>
+  `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+    isActive
+      ? 'bg-teal-700 text-white dark:bg-teal-600'
+      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+  }`;
 
 export default function PatientNavbar() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
+    setMenuOpen(false);
     await logout();
     navigate('/login', { replace: true });
   };
 
   return (
-    <nav className="bg-teal-700 text-white px-6 py-3 flex items-center justify-between">
-      <div className="flex gap-6">
-        <Link to="/patient/search" className="hover:underline">
-          Buscar Médico
-        </Link>
-        <Link to="/patient/appointments" className="hover:underline">
-          Mis Citas
-        </Link>
+    <nav className="bg-teal-700 dark:bg-gray-900 border-b border-teal-800 dark:border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14">
+          {/* Logo → Landing Page */}
+          <Link
+            to="/"
+            className="text-white dark:text-teal-400 font-bold text-lg shrink-0 hover:opacity-80 transition-opacity"
+          >
+            MediQ
+          </Link>
+
+          {/* Desktop links */}
+          <div className="hidden sm:flex items-center gap-2">
+            {navItems.map((item) => (
+              <NavLink key={item.path} to={item.path} className={itemClass}>
+                <item.icon className="w-4 h-4" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+
+          {/* Desktop actions */}
+          <div className="hidden sm:flex items-center gap-3">
+            <span className="text-sm text-white/80 dark:text-gray-400 truncate max-w-[120px]">
+              {user?.nombre}
+            </span>
+            <div className="text-sm text-white/70 dark:text-gray-300 text-xs">{formatRole(user?.rol || user?.role)}</div>
+            <NotificationsBell />
+            <ThemeToggle />
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 dark:bg-gray-700 dark:hover:bg-gray-600 text-white dark:text-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+
+          {/* Mobile: ThemeToggle + hamburger */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen(true)}
+              aria-label="Abrir menú"
+              className="p-2 rounded-lg text-white hover:bg-teal-800 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
-        <span className="text-sm">{user?.nombre}</span>
+
+      {/* Mobile drawer */}
+      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)}>
+        {/* Saludo */}
+        <div className="px-3 py-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate">{user?.nombre}</p>
+          <p className="text-xs text-gray-400">{formatRole(user?.rol || user?.role)}</p>
+        </div>
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={mobileItemClass}
+            onClick={() => setMenuOpen(false)}
+          >
+            <item.icon className="w-4 h-4" />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+        <hr className="my-2 border-gray-200 dark:border-gray-700" />
         <button
           onClick={handleLogout}
-          className="bg-white text-teal-700 px-3 py-1 rounded text-sm font-medium hover:bg-teal-50"
+          className="flex items-center gap-2 w-full px-3 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
         >
-          Cerrar Sesión
+          <LogOut className="w-4 h-4" />
+          <span>Cerrar sesión</span>
         </button>
-      </div>
+      </MobileMenu>
     </nav>
   );
 }

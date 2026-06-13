@@ -1,20 +1,20 @@
 # 🏥 MediQ
 
 > **Sistema de Agendamiento Médico — Full Stack**
-> React · Vite · TailwindCSS · Node.js · Express · MongoDB Atlas · JWT
+> React · Vite · TailwindCSS v4 · Zustand · Node.js · Express · MongoDB Atlas · JWT
 
 ---
 
-## 📋 Contexto del Proyecto
+## 📋 Descripción del Proyecto
 
 MediQ es un Sistema de Agendamiento Médico (SPA) desarrollado con React. Tiene tres roles de usuario:
 
 - **Paciente:** busca médicos, reserva y gestiona citas.
-- **Médico:** ve su agenda, confirma/rechaza citas, edita disponibilidad.
-- **Administrador:** gestiona todos los usuarios, citas y genera reportes.
+- **Médico:** ve su agenda semanal, confirma/rechaza citas, configura disponibilidad.
+- **Administrador:** gestiona todos los usuarios, citas y genera reportes estadísticos.
 
 El **Backend** está desarrollado con Node.js + Express + MongoDB Atlas + JWT en la carpeta `/Backend`.
-El **Frontend** está desarrollado con React + Vite + TailwindCSS en la carpeta `/Frontend`.
+El **Frontend** está desarrollado con React + Vite + TailwindCSS v4 + Zustand en la carpeta `/Frontend`.
 La autenticación usa cookies HttpOnly (el backend las setea en `/api/auth/login`).
 
 ---
@@ -23,34 +23,34 @@ La autenticación usa cookies HttpOnly (el backend las setea en `/api/auth/login
 
 ### Frontend
 
-| Categoría           | Librería / Herramienta      | Versión  |
-| -------------------- | ---------------------------- | -------- |
-| Bundler              | Vite                         | ^7.3.1   |
-| UI Library           | React                        | ^19.2.4  |
-| Routing              | React Router DOM             | ^7.13.1  |
-| Formularios          | React Hook Form              | ^7.71.2  |
-| Validaciones         | Zod                          | ^4.3.6   |
-| Integración RHF+Zod | @hookform/resolvers          | ^5.2.2   |
-| HTTP Client          | Axios                        | ^1.13.6  |
-| Estilos              | TailwindCSS                  | ^4.2.1   |
-| Íconos              | Lucide React                 | ^0.577.0 |
-| Gráficas            | Recharts                     | ^3.8.0   |
-| Cookies              | js-cookie                    | ^3.0.5   |
-| Estado global        | Context API (built-in React) | —       |
+| Categoría            | Librería / Herramienta | Versión   |
+| --------------------- | ----------------------- | --------- |
+| Bundler               | Vite                    | ^7.3.1    |
+| UI Library            | React                   | ^19.2.4   |
+| Routing               | React Router DOM        | ^7.13.1   |
+| Estado global         | **Zustand**             | ^5.x      |
+| Formularios           | React Hook Form         | ^7.71.2   |
+| Validaciones          | Zod                     | ^4.3.6    |
+| Integración RHF+Zod   | @hookform/resolvers     | ^5.2.2    |
+| HTTP Client           | Axios                   | ^1.13.6   |
+| Estilos               | TailwindCSS             | **^4.2.1** |
+| Íconos               | Lucide React            | ^0.577.0  |
+| Gráficas             | Recharts                | ^3.8.0    |
+| Cookies               | js-cookie               | ^3.0.5    |
 
 ### Backend
 
-| Categoría       | Librería / Herramienta | Versión |
-| ---------------- | ----------------------- | -------- |
-| Runtime          | Node.js                 | v18+     |
-| Framework        | Express                 | ^4.18.2  |
-| Base de Datos    | MongoDB (Mongoose)      | ^8.0.3   |
-| Autenticación   | JSON Web Token (JWT)    | ^9.0.2   |
-| Encriptación    | bcryptjs                | ^2.4.3   |
-| Validaciones     | express-validator       | ^7.0.1   |
-| Documentación   | Swagger (swagger-jsdoc) | ^6.2.8   |
-| Logging          | Morgan                  | ^1.10.0  |
-| Testing          | Jest + Supertest        | ^29.7.0  |
+| Categoría        | Librería / Herramienta | Versión  |
+| ----------------- | ----------------------- | -------- |
+| Runtime           | Node.js                 | v18+     |
+| Framework         | Express                 | ^4.18.2  |
+| Base de Datos     | MongoDB (Mongoose)      | ^8.0.3   |
+| Autenticación    | JSON Web Token (JWT)    | ^9.0.2   |
+| Encriptación     | bcryptjs                | ^2.4.3   |
+| Validaciones      | express-validator       | ^7.0.1   |
+| Documentación    | Swagger UI Express      | —        |
+| Logging           | Morgan                  | ^1.10.0  |
+| Testing           | Jest + Supertest        | ^29.7.0  |
 
 > **Node.js requerido:** v18 o superior
 
@@ -76,39 +76,29 @@ git checkout develop
 ### 2. Configurar el Backend
 
 ```bash
-# Entrar a la carpeta del backend
 cd Backend
-
-# Instalar dependencias
 npm install
-
-# Crear archivo de entorno
 cp .env.example .env
 ```
 
-Editar el archivo `Backend/.env` con las siguientes variables:
+Editar `Backend/.env`:
 
 ```env
 PORT=5000
 MONGODB_URI=mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/mediq
-JWT_SECRET=tu_clave_secreta_jwt
+JWT_SECRET=tu_clave_secreta_jwt_minimo_32_caracteres
 NODE_ENV=development
 ```
 
 ### 3. Configurar el Frontend
 
 ```bash
-# Desde la raíz del proyecto, entrar a la carpeta del frontend
 cd Frontend
-
-# Instalar dependencias
 npm install
-
-# Crear archivo de entorno
 cp .env.example .env
 ```
 
-Editar el archivo `Frontend/.env`:
+Editar `Frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
@@ -120,20 +110,20 @@ VITE_API_URL=http://localhost:5000/api
 
 ### Backend (`/Backend`)
 
-| Comando           | Descripción                                    |
-| ------------------ | ----------------------------------------------- |
-| `npm run dev`      | Inicia el servidor con **nodemon** (auto-reload) |
-| `npm start`        | Inicia el servidor en modo producción           |
-| `npm test`         | Ejecuta las pruebas con Jest                     |
+| Comando        | Descripción                                     |
+| --------------- | ----------------------------------------------- |
+| `npm run dev`   | Inicia el servidor con **nodemon** (auto-reload) |
+| `npm start`     | Inicia el servidor en modo producción            |
+| `npm test`      | Ejecuta las pruebas con Jest                     |
 
 ### Frontend (`/Frontend`)
 
-| Comando             | Descripción                                  |
-| -------------------- | --------------------------------------------- |
-| `npm run dev`        | Inicia el servidor de desarrollo Vite         |
-| `npm run build`      | Genera el build de producción                 |
-| `npm run preview`    | Previsualiza el build de producción           |
-| `npm run lint`       | Ejecuta ESLint para verificar el código       |
+| Comando           | Descripción                            |
+| ------------------ | -------------------------------------- |
+| `npm run dev`      | Inicia el servidor de desarrollo Vite  |
+| `npm run build`    | Genera el build de producción          |
+| `npm run preview`  | Previsualiza el build de producción    |
+| `npm run lint`     | Ejecuta ESLint                         |
 
 ### Ejecución Completa (Backend + Frontend)
 
@@ -149,34 +139,44 @@ npm run dev
 # ✅ App corriendo en http://localhost:5173
 ```
 
-> ⚠️ El **Backend debe estar corriendo** antes de usar el Frontend para que las llamadas a la API funcionen correctamente.
+> ⚠️ El **Backend debe estar corriendo** antes de usar el Frontend.
 
 ---
 
 ## 📬 Pruebas de API con Postman
 
-Hemos documentado y probado todos los endpoints de la API usando **Postman**. Puedes importar nuestra colección para probar los endpoints directamente.
+Importar el archivo `Backend/postman_collection.json` desde Postman.
 
 [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/43571081-7a36246b-8fae-4893-95e1-8267bf3fe0a8?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D43571081-7a36246b-8fae-4893-95e1-8267bf3fe0a8%26entityType%3Dcollection%26workspaceId%3Daf66e3b3-958a-44a6-9f75-53ec7f020754)
 
-> También puedes importar manualmente el archivo `Backend/postman_collection.json` desde Postman.
+### Endpoints disponibles
 
-### Endpoints principales disponibles
+| Módulo           | Método | Endpoint                         | Auth requerida | Rol mínimo |
+| ----------------- | ------- | --------------------------------- | -------------- | ---------- |
+| **Health**        | GET    | `/api/health`                    | No             | —          |
+| **Auth**          | POST   | `/api/auth/register`             | No             | —          |
+| **Auth**          | POST   | `/api/auth/login`                | No             | —          |
+| **Auth**          | POST   | `/api/auth/logout`               | Sí            | cualquiera |
+| **Auth**          | GET    | `/api/auth/me`                   | Sí            | cualquiera |
+| **Users**         | GET    | `/api/users`                     | Sí            | admin      |
+| **Users**         | GET    | `/api/users/:id`                 | Sí            | dueño/admin|
+| **Users**         | PUT    | `/api/users/:id`                 | Sí            | dueño/admin|
+| **Users**         | DELETE | `/api/users/:id`                 | Sí            | admin      |
+| **Doctors**       | GET    | `/api/doctors`                   | No             | —          |
+| **Doctors**       | GET    | `/api/doctors/:id`               | No             | —          |
+| **Doctors**       | POST   | `/api/doctors`                   | Sí            | admin      |
+| **Doctors**       | PUT    | `/api/doctors/:id`               | Sí            | admin/médico|
+| **Doctors**       | DELETE | `/api/doctors/:id`               | Sí            | admin      |
+| **Appointments**  | GET    | `/api/appointments`              | Sí            | cualquiera |
+| **Appointments**  | GET    | `/api/appointments/:id`          | Sí            | cualquiera |
+| **Appointments**  | POST   | `/api/appointments`              | Sí            | paciente/admin|
+| **Appointments**  | PATCH  | `/api/appointments/:id/status`   | Sí            | médico/admin|
+| **Appointments**  | DELETE | `/api/appointments/:id`          | Sí            | cualquiera |
+| **Reports**       | GET    | `/api/reports/ocupacion`         | Sí            | admin      |
+| **Reports**       | GET    | `/api/reports/especialidades`    | Sí            | admin      |
+| **Reports**       | GET    | `/api/reports/periodo`           | Sí            | admin      |
 
-| Módulo           | Método | Endpoint                        | Descripción                  |
-| ----------------- | ------- | -------------------------------- | ----------------------------- |
-| **Auth**          | POST   | `/api/auth/register`            | Registrar usuario             |
-| **Auth**          | POST   | `/api/auth/login`               | Iniciar sesión               |
-| **Auth**          | POST   | `/api/auth/logout`              | Cerrar sesión                |
-| **Usuarios**      | GET    | `/api/users/profile`            | Ver perfil del usuario        |
-| **Citas**         | POST   | `/api/appointments`             | Crear una cita                |
-| **Citas**         | GET    | `/api/appointments`             | Listar citas                  |
-| **Citas**         | PATCH  | `/api/appointments/:id/status`  | Cambiar estado de cita        |
-| **Disponibilidad**| GET    | `/api/availability/:doctorId`   | Ver disponibilidad del médico |
-| **Admin**         | GET    | `/api/admin/users`              | Listar todos los usuarios     |
-| **Admin**         | GET    | `/api/admin/reports`            | Generar reportes              |
-
-> 📖 Documentación Swagger disponible en: `http://localhost:5000/api-docs` (cuando el backend está corriendo)
+> 📖 Documentación Swagger interactiva: `http://localhost:5000/api-docs`
 
 ---
 
@@ -185,87 +185,92 @@ Hemos documentado y probado todos los endpoints de la API usando **Postman**. Pu
 ```
 MediQ/
 ├── Backend/
-│   └── src/
-│       ├── config/          ← Configuración de DB y variables de entorno
-│       ├── controllers/     ← Lógica de los endpoints
-│       ├── middleware/       ← Autenticación, validaciones, manejo de errores
-│       ├── models/          ← Esquemas de Mongoose
-│       ├── routes/          ← Definición de rutas Express
-│       ├── swagger/         ← Documentación Swagger/OpenAPI
-│       ├── app.js           ← Configuración de Express
-│       └── server.js        ← Punto de entrada del servidor
+│   ├── src/
+│   │   ├── config/          ← db.js, env.js, swagger.json
+│   │   ├── controllers/     ← appointment, auth, doctor, report, user
+│   │   ├── middlewares/     ← auth.middleware.js, role.middleware.js, error.middleware.js
+│   │   ├── models/          ← User.js, Doctor.js, Appointment.js
+│   │   ├── routes/          ← appointment, auth, doctor, report, user routes
+│   │   ├── utils/           ← jwt.js, response.js, validators.js
+│   │   ├── app.js           ← Configuración de Express
+│   │   └── server.js        ← Punto de entrada
+│   ├── tests/               ← auth.test.js, appointments.test.js
+│   ├── postman_collection.json
+│   └── swagger-spec.yml
 │
-├── Frontend/
-│   └── src/
-│       ├── api/             ← axiosInstance.js + llamadas a la API
-│       ├── components/
-│       │   ├── ui/          ← MyButton, CustomCard, FormInput, Modal, Navbar...
-│       │   └── shared/      ← LoadingSpinner, ToastNotification, Pagination...
-│       ├── context/         ← AuthContext.jsx (estado global de autenticación)
-│       ├── hooks/           ← hooks personalizados (useAuth, useApi...)
-│       ├── pages/
-│       │   ├── public/      ← LandingPage, LoginPage, RegisterPage
-│       │   ├── patient/     ← SearchDoctorsPage, BookAppointmentPage, MyAppointmentsPage
-│       │   ├── doctor/      ← AgendaPage, AvailabilityPage, NotificationsPage
-│       │   └── admin/       ← DashboardPage, ReportsPage, UsersManagementPage
-│       ├── utils/           ← validationSchemas.js (Zod schemas)
-│       ├── App.jsx          ← AppRouter con todas las rutas
-│       └── main.jsx         ← Punto de entrada, envuelve con AuthProvider
-│
-└── README.md
+└── Frontend/
+    └── src/
+        ├── api/             ← axiosInstance.js (withCredentials: true)
+        ├── components/
+        │   ├── ui/          ← MyButton, CustomCard, FormInput, Modal, Navbar,
+        │   │                   AdminNavbar, DoctorNavbar, PatientNavbar,
+        │   │                   MobileMenu, ThemeToggle, Badge, LoadingSpinner,
+        │   │                   Skeleton, Tooltip, AuthFeedback
+        │   └── shared/      ← ProtectedRoute, ToastNotification, Pagination,
+        │                       EmptyState, ModalWrapper, ErrorBoundary
+        ├── hooks/           ← useApi.js
+        ├── pages/
+        │   ├── public/      ← LandingPage, LoginPage, RegisterPage, NotFoundPage
+        │   ├── patient/     ← SearchDoctorsPage, BookAppointmentPage, MyAppointmentsPage
+        │   ├── doctor/      ← DoctorDashboardPage, AgendaPage, AvailabilityPage, NotificationsPage
+        │   └── admin/       ← DashboardPage, ReportsPage, UsersManagementPage
+        ├── stores/          ← useAuthStore.js, useAppointmentStore.js,
+        │                       useDoctorStore.js, useToastStore.js, useThemeStore.js
+        ├── utils/           ← validationSchemas.js
+        ├── App.jsx          ← AppRouter con rutas anidadas por rol
+        └── main.jsx         ← Punto de entrada
 ```
 
 ---
 
-## 🗺️ Mapa de Componentes
+## 🗺️ Mapa de Rutas
 
 ```
-App
-└── AppRouter (React Router DOM)
-    ├── [Públicas] PublicLayout
-    │   ├── LandingPage (/)
-    │   ├── LoginPage (/login)
-    │   └── RegisterPage (/register)
+App (React Router DOM v7)
+└── AppRouter
+    ├── [Públicas]
+    │   ├── /                    → LandingPage
+    │   ├── /login               → LoginPage
+    │   ├── /register            → RegisterPage
+    │   └── *                    → NotFoundPage
     │
-    ├── [Paciente 🔒] PatientLayout
-    │   ├── SearchDoctorsPage (/patient/search)
-    │   ├── BookAppointmentPage (/patient/book/:doctorId)
-    │   └── MyAppointmentsPage (/patient/appointments)
+    ├── [Paciente 🔒] PatientLayout (requiere rol: paciente)
+    │   ├── /patient/search      → SearchDoctorsPage
+    │   ├── /patient/book/:id    → BookAppointmentPage
+    │   └── /patient/appointments→ MyAppointmentsPage
     │
-    ├── [Médico 🔒] DoctorLayout
-    │   ├── AgendaPage (/doctor/agenda)
-    │   ├── AvailabilityPage (/doctor/availability)
-    │   └── NotificationsPage (/doctor/notifications)
+    ├── [Médico 🔒] DoctorLayout (requiere rol: medico)
+    │   ├── /doctor              → DoctorDashboardPage
+    │   ├── /doctor/agenda       → AgendaPage
+    │   ├── /doctor/availability → AvailabilityPage
+    │   └── /doctor/notifications→ NotificationsPage
     │
-    ├── [Admin 🔒] AdminLayout
-    │   ├── DashboardPage (/admin/dashboard)
-    │   ├── ReportsPage (/admin/reports)
-    │   └── UsersManagementPage (/admin/users)
-    │
-    └── [Compartidos]
-        ├── ProtectedRoute
-        ├── LoadingSpinner
-        ├── ToastNotification
-        ├── ErrorBoundary
-        ├── ModalWrapper
-        ├── Pagination
-        └── EmptyState
+    └── [Admin 🔒] AdminLayout (requiere rol: admin)
+        ├── /admin/dashboard     → DashboardPage
+        ├── /admin/reports       → ReportsPage
+        └── /admin/users         → UsersManagementPage
 ```
-
-**AuthContext expone:** `user`, `isAuthenticated`, `isLoading`, `error`, `login()`, `logout()`, `clearError()`, `isPaciente()`, `isMedico()`, `isAdministrador()`
 
 ---
 
-## 👥 Equipo de Desarrollo
+## 🗄️ Modelo de Datos (DER simplificado)
 
-| # | Integrante                                |
-| - | ------------------------------------------ |
-| 1 | **Deyvid Alejandro Rodríguez Portilla**   |
-| 2 | **Farid Esteban Semanate Castellanos**     |
-| 3 | **Niyerieth Fernanda Ruiz Solarte**        |
-| 4 | **María Isabel Carrillo Vidales**          |
-| 5 | **Aura Camila Arteaga Castillo**           |
-| 6 | **Daniel Yanguatin Jacanamijoy**           |
+```
+User (_id, nombre, email, contrasena, rol, timestamps)
+  │
+  └──< Doctor (_id, userId→User, especialidad, registroMedico, disponibilidad[], timestamps)
+                │
+                └──< Appointment (_id, pacienteId→User, doctorId→Doctor,
+                                  fechaHora, estado, motivo, timestamps)
+```
+
+**Estados de una cita:** `pendiente` → `confirmada` → `completada` / `cancelada`
+
+---
+
+## 🌙 Dark Mode
+
+El proyecto soporta dark mode con persistencia en `localStorage`. Usar el botón `ThemeToggle` en cualquier navbar para alternar. Implementado con Zustand (`useThemeStore`) y clases `dark:` de Tailwind v4.
 
 ---
 
@@ -283,6 +288,19 @@ git commit -m "feat: descripción concreta de lo que hice"
 git push origin feature/mi-rama
 # Luego crear Pull Request: feature/mi-rama → develop
 ```
+
+---
+
+## 👥 Equipo de Desarrollo
+
+| # | Integrante                                | Rama                                    |
+| - | ------------------------------------------ | --------------------------------------- |
+| 1 | **Deyvid Alejandro Rodríguez Portilla**   | `feature/alejandro-docs-responsive`     |
+| 2 | **Farid Esteban Semanate Castellanos**     | `feature/farid-router-layouts`          |
+| 3 | **Niyerieth Fernanda Ruiz Solarte**        | `feature/fernanda-zustand-appointments` |
+| 4 | **María Isabel Carrillo Vidales**          | `feature/isabel-darkmode-ui`            |
+| 5 | **Aura Camila Arteaga Castillo**           | `feature/camila-zustand-auth` (rama anterior) |
+| 6 | **Daniel Yanguatin Jacanamijoy**           | `feature/daniel-api-integration`        |
 
 ---
 

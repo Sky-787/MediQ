@@ -8,23 +8,49 @@ const doctorSchema = new mongoose.Schema(
       required: [true, 'El userId es obligatorio'],
       unique: true,
     },
+
     especialidad: {
       type: String,
       required: [true, 'La especialidad es obligatoria'],
       trim: true,
     },
+
     registroMedico: {
       type: String,
       required: [true, 'El registro médico es obligatorio'],
       unique: true,
       trim: true,
     },
-    disponibilidad: {
-      type: Array,
-      default: [],
-    },
+
+    disponibilidad: [
+      {
+        dia: {
+          type: String,
+          enum: [
+            'Lunes',
+            'Martes',
+            'Miércoles',
+            'Jueves',
+            'Viernes',
+            'Sábado',
+            'Domingo',
+          ],
+          required: true,
+        },
+
+        horas: {
+          type: [String],
+          default: [],
+        },
+      },
+    ],
   },
-  { timestamps: true, versionKey: false }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
-module.exports = mongoose.model('Doctor', doctorSchema);
+module.exports =
+  mongoose.models.Doctor ||
+  mongoose.model('Doctor', doctorSchema);

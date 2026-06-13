@@ -9,6 +9,15 @@ requiredVars.forEach((varName) => {
   }
 });
 
+// Advertir si JWT_SECRET es demasiado débil en producción
+if (
+  process.env.NODE_ENV === 'production' &&
+  process.env.JWT_SECRET.length < 32
+) {
+  console.error('❌ JWT_SECRET demasiado corto para producción. Usa al menos 32 caracteres.');
+  process.exit(1);
+}
+
 module.exports = {
   PORT: process.env.PORT || 5000,
   NODE_ENV: process.env.NODE_ENV || 'development',

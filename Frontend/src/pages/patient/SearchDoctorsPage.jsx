@@ -1,170 +1,267 @@
 // src/pages/patient/SearchDoctorsPage.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut } from 'lucide-react';
+import { User } from 'lucide-react';
 import axiosInstance from '../../api/axiosInstance';
-import { useAuthStore } from '../../stores/useAuthStore';
+import useDoctorStore from '../../stores/useDoctorStore';
+import useToastStore from '../../stores/useToastStore';
+import { SkeletonCard } from '../../components/ui/Skeleton';
 
-function AvailabilityGrid({ doctor, onClose }) {
+// ─── Componentes extraídos y memoizados fuera del componente padre ──────────
+
+const AvailabilityGrid = memo(function AvailabilityGrid({ doctor, onClose }) {
   const navigate = useNavigate();
-  const [slots, setSlots] = useState([]);
+  const [disponibilidad, setDisponibilidad] = useState([]);
 
   useEffect(() => {
     axiosInstance.get(`/doctors/${doctor._id}`)
       .then(res => {
-        const slotsData = res.data?.slots || [];
-        setSlots(Array.isArray(slotsData) ? slotsData : []);
+        const raw = res.data?.disponibilidad || res.data?.data?.disponibilidad || [];
+        const normalized = (Array.isArray(raw) ? raw : []).map(item => ({
+          ...item,
+          horario: item.horario || (item.horas && item.horas.length > 0 ? item.horas[0] : '')
+        }));
+        setDisponibilidad(normalized);
       })
-      .catch(() => setSlots([]));
+      .catch(() => setDisponibilidad([]));
   }, [doctor._id]);
 
-  const handleSlot = (slot) => {
+  const handleSlot = useCallback((dia, horario) => {
     onClose();
-    navigate(`/patient/book/${doctor._id}`, { state: { slot } });
-  };
+    navigate(`/patient/book/${doctor._id}`, { state: { dia, horario } });
+  }, [onClose, navigate, doctor._id]);
+
+  const doctorName = doctor.userId?.nombre || doctor.nombre || 'Médico';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-4">Disponibilidad — {doctor.nombre}</h3>
-        {slots.length === 0 ? (
-          <p className="text-gray-500 text-sm">Sin slots disponibles.</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-4 dark:text-white">
+          Disponibilidad — {doctorName}
+        </h3>
+
+        {disponibilidad.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Sin disponibilidad registrada.
+          </p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {slots.map((slot, i) => (
-              <button key={i} onClick={() => handleSlot(slot)} className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm hover:bg-teal-200">
-                {slot.fechaHora || slot}
+          <div className="flex flex-col gap-2">
+            {disponibilidad.map((item, i) => (
+              <button
+                key={i}
+                onClick={() => handleSlot(item.dia, item.horario)}
+                className="bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 px-4 py-2 rounded-lg text-sm hover:bg-teal-200 dark:hover:bg-teal-800 text-left transition-colors"
+              >
+                <span className="font-semibold">{item.dia}</span>
+                {item.horario && <span className="ml-2 text-teal-600 dark:text-teal-400">{item.horario}</span>}
               </button>
             ))}
           </div>
         )}
-        <button onClick={onClose} className="mt-4 text-sm text-gray-500 hover:underline">Cerrar</button>
+
+        <button
+          onClick={onClose}
+          className="mt-4 text-sm text-gray-500 dark:text-gray-400 hover:underline"
+        >
+          Cerrar
+        </button>
       </div>
     </div>
   );
-}
+});
 
-function DoctorCard({ doctor, onVerDisponibilidad }) {
-  const slots = Array.isArray(doctor.slots) ? doctor.slots : [];
+const DoctorCard = memo(function DoctorCard({ doctor, onVerDisponibilidad }) {
+  const disponibilidad = Array.isArray(doctor.disponibilidad)
+    ? doctor.disponibilidad.map(item => ({
+        ...item,
+        horario: item.horario || (item.horas && item.horas.length > 0 ? item.horas[0] : '')
+      }))
+    : [];
+
+  const handleClick = () => {
+    onVerDisponibilidad(doctor);
+  };
+
+  const doctorName = doctor.userId?.nombre || doctor.nombre || 'Médico';
+
   return (
-    <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-2">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col gap-2">
       <div className="flex items-center gap-3">
         {doctor.foto ? (
-          <img src={doctor.foto} alt={doctor.nombre} className="w-12 h-12 rounded-full object-cover" />
+          <img
+            src={doctor.foto}
+            alt={doctorName}
+            className="w-12 h-12 rounded-full object-cover"
+          />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center">
-            <User className="text-teal-600" size={24} />
+          <div className="w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center">
+            <User className="text-teal-600 dark:text-teal-400" size={24} />
           </div>
         )}
+
         <div>
-          <p className="font-semibold text-gray-800">{doctor.nombre}</p>
-          <p className="text-sm text-gray-500">{doctor.especialidad}</p>
+          <p className="font-semibold text-gray-800 dark:text-white">{doctorName}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {doctor.especialidad}
+          </p>
         </div>
       </div>
+
       <div className="flex flex-wrap gap-1">
-        {slots.slice(0, 3).map((slot, i) => (
-          <span key={i} className="bg-teal-50 text-teal-700 text-xs px-2 py-1 rounded-full">
-            {slot.fechaHora || slot}
+        {disponibilidad.slice(0, 2).map((item, i) => (
+          <span
+            key={i}
+            className="bg-teal-50 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 text-xs px-2 py-1 rounded-full"
+          >
+            {item.dia}{item.horario ? ` · ${item.horario}` : ''}
           </span>
         ))}
-        {slots.length > 3 && (
-          <span className="text-xs text-gray-500 px-2 py-1">+{slots.length - 3} más</span>
+
+        {disponibilidad.length > 2 && (
+          <span className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">
+            +{disponibilidad.length - 2} más
+          </span>
+        )}
+
+        {disponibilidad.length === 0 && (
+          <span className="text-xs text-gray-400 dark:text-gray-500 px-2 py-1">
+            Sin horarios
+          </span>
         )}
       </div>
-      <button onClick={() => onVerDisponibilidad(doctor)} className="mt-1 bg-teal-700 text-white text-sm px-4 py-2 rounded hover:bg-teal-800 transition-colors">
+
+      <button
+        onClick={handleClick}
+        className="mt-1 bg-teal-700 dark:bg-teal-600 text-white text-sm px-4 py-2 rounded hover:bg-teal-800 dark:hover:bg-teal-700 transition-colors"
+      >
         Ver disponibilidad
       </button>
     </div>
   );
-}
+});
 
-export default function SearchDoctorsPage() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+// ─── Hook personalizado: debounce ────────────────────────────────────────────
 
-  const [especialidad, setEspecialidad] = useState('');
-  const [fecha, setFecha] = useState('');
-  const [doctors, setDoctors] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+function useDebounce(value, delay = 500) {
+  const [debounced, setDebounced] = useState(value);
 
   useEffect(() => {
-    const fetchDoctors = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const params = {};
-        if (especialidad) params.especialidad = especialidad;
-        if (fecha) params.fecha = fecha;
-        const res = await axiosInstance.get('/doctors', { params });
-        let doctorsData = [];
-        if (Array.isArray(res.data)) doctorsData = res.data;
-        else if (res.data?.data && Array.isArray(res.data.data)) doctorsData = res.data.data;
-        else if (res.data?.doctors && Array.isArray(res.data.doctors)) doctorsData = res.data.doctors;
-        setDoctors(doctorsData);
-      } catch (err) {
-        setError('Error al cargar los médicos');
-        setDoctors([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDoctors();
-  }, [especialidad, fecha]);
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
 
-  const handleLogout = async () => {
+  return debounced;
+}
+
+// ─── Página principal ────────────────────────────────────────────────────────
+
+export default function SearchDoctorsPage() {
+  const { doctors, isLoading, error, fetchDoctors } = useDoctorStore();
+  const showToast = useToastStore((state) => state.showToast);
+
+  // Estado local del input (responde inmediatamente al escribir)
+  const [especialidadInput, setEspecialidadInput] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+  // Valor debounced: solo dispara la búsqueda 500ms después de dejar de escribir
+  const especialidad = useDebounce(especialidadInput, 500);
+  const fechaDebounced = useDebounce(fecha, 300);
+
+  // Estabilizamos fetchDoctors con useCallback para que no cambie referencia
+  const loadDoctors = useCallback(async (params) => {
     try {
-      await logout();
-      navigate('/login', { replace: true });
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      await fetchDoctors(params);
+    } catch (err) {
+      if (!err.response) {
+        showToast('Error de conexión. Verificá tu red e intentá de nuevo.', 'error');
+      } else {
+        showToast('Error al cargar los médicos.', 'error');
+      }
     }
-  };
+  }, [fetchDoctors, showToast]);
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto py-6 px-4">
-        <div className="text-center py-12">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-teal-700 border-r-transparent"></div>
-          <p className="mt-2 text-gray-600">Cargando médicos...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const params = {};
+    if (especialidad) params.especialidad = especialidad;
+    if (fechaDebounced) params.fecha = fechaDebounced;
+    loadDoctors(params);
+  }, [especialidad, fechaDebounced, loadDoctors]);
+
+  // Callback estable para pasar a los cards (evita re-renders innecesarios)
+  const handleVerDisponibilidad = useCallback((doctor) => {
+    setSelectedDoctor(doctor);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedDoctor(null);
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Buscar Médico</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user?.nombre} ({user?.rol})</span>
-          <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Cerrar sesión</span>
-          </button>
+      <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          Buscar Médico
+          {isLoading && (
+            <span className="inline-block w-4 h-4 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          )}
+        </h2>
+      </div>
+
+      {/* ── Filtros ─────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <input
+          type="text"
+          placeholder="Especialidad"
+          value={especialidadInput}
+          onChange={e => setEspecialidadInput(e.target.value)}
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500 text-sm"
+        />
+
+        <input
+          type="date"
+          value={fecha}
+          onChange={e => setFecha(e.target.value)}
+          className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-sm w-full sm:w-auto"
+        />
+      </div>
+
+      {/* ── Error ───────────────────────────────────────────────────────── */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-4 rounded-lg mb-4 text-sm">
+          {error}
         </div>
-      </div>
+      )}
 
-      <div className="flex gap-4 mb-6">
-        <input type="text" placeholder="Especialidad" value={especialidad} onChange={e => setEspecialidad(e.target.value)} className="border border-gray-300 rounded px-3 py-2 flex-1 focus:outline-none focus:border-teal-500" />
-        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500" />
-      </div>
-
-      {error && <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
-
-      {doctors.length === 0 ? (
-        <div className="text-center text-gray-500 py-12">No se encontraron médicos.</div>
+      {/* ── Lista de doctores ────────────────────────────────────────────── */}
+      {isLoading && doctors.length === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : doctors.length === 0 ? (
+        <div className="text-center text-gray-500 dark:text-gray-400 py-12 text-sm">
+          No se encontraron médicos.
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {doctors.map(doc => (
-            <DoctorCard key={doc._id} doctor={doc} onVerDisponibilidad={setSelectedDoctor} />
+            <DoctorCard
+              key={doc._id}
+              doctor={doc}
+              onVerDisponibilidad={handleVerDisponibilidad}
+            />
           ))}
         </div>
       )}
 
+      {/* ── Modal de disponibilidad ──────────────────────────────────────── */}
       {selectedDoctor && (
-        <AvailabilityGrid doctor={selectedDoctor} onClose={() => setSelectedDoctor(null)} />
+        <AvailabilityGrid
+          doctor={selectedDoctor}
+          onClose={handleCloseModal}
+        />
       )}
     </div>
   );

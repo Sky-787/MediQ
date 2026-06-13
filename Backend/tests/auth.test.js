@@ -51,4 +51,23 @@ describe('Auth Flow', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.email).toBe('juan@test.com');
   });
+  it('POST /api/auth/login debe fallar con contraseña incorrecta (401)', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'juan@test.com',
+        contrasena: 'wrongpassword'
+      });
+    expect(res.status).toBe(401);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('POST /api/auth/logout debe cerrar sesión y limpiar cookie (200)', async () => {
+    const res = await request(app)
+      .post('/api/auth/logout')
+      .set('Cookie', cookie);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('Sesión cerrada correctamente');
+  });
 });

@@ -40,7 +40,7 @@ const Pagination = ({ total, page, limit, onPageChange }) => {
         className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
         aria-label="Página anterior"
       >
-        <ChevLeft className="w-5 h-5" />
+        <ChevronLeft className="w-5 h-5" />
       </button>
       
       {getPageNumbers().map((pageNum, index) => (

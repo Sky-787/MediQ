@@ -1,11 +1,13 @@
-// src/main.jsx
+﻿// src/main.jsx
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { useThemeStore } from './stores/useThemeStore'
 
-// AuthProvider eliminado — el estado de sesión ahora lo maneja
-// useAuthStore (Zustand) en src/stores/useAuthStore.js
+// Inicializar tema guardado antes de renderizar
+const { theme } = useThemeStore.getState();
+if (theme === 'dark') document.documentElement.classList.add('dark');
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

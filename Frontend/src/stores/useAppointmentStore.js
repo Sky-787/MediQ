@@ -10,12 +10,17 @@ const useAppointmentStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axiosInstance.get('/appointments');
-      set({ appointments: response.data || [], isLoading: false });
+      // El backend devuelve { data: [...], total, page } — extraemos el array
+      const data = response.data;
+      const list = Array.isArray(data) ? data
+        : Array.isArray(data?.data) ? data.data
+        : [];
+      set({ appointments: list, isLoading: false });
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Error al cargar las citas', 
+      set({
+        error: error.response?.data?.message || 'Error al cargar las citas',
         isLoading: false,
-        appointments: []
+        appointments: [],
       });
     }
   },
@@ -24,38 +29,38 @@ const useAppointmentStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axiosInstance.post('/appointments', data);
-      set((state) => ({ 
-        appointments: [...state.appointments, response.data],
-        isLoading: false 
+      const newAppointment = response.data?.data || response.data;
+      set((state) => ({
+        appointments: [...state.appointments, newAppointment],
+        isLoading: false,
       }));
-      return response.data; // Retornamos para que la vista pueda saber que fue éxito
+      return newAppointment;
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Error al crear la cita', 
-        isLoading: false 
+      set({
+        error: error.response?.data?.message || 'Error al crear la cita',
+        isLoading: false,
       });
-      throw error; // Para que el componente capture y muestre su error si lo necesita
+      throw error;
     }
   },
 
   updateAppointment: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      // Intentamos con patch/status o put dependiendo del data
       const url = data.estado ? `/appointments/${id}/status` : `/appointments/${id}`;
       const response = await axiosInstance[data.estado ? 'patch' : 'put'](url, data);
-      
+      const updated = response.data?.data || response.data;
       set((state) => ({
-        appointments: state.appointments.map(app => 
-          app._id === id ? { ...app, ...response.data } : app
+        appointments: state.appointments.map(app =>
+          app._id === id ? { ...app, ...updated } : app
         ),
-        isLoading: false
+        isLoading: false,
       }));
-      return response.data;
+      return updated;
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Error al actualizar la cita', 
-        isLoading: false 
+      set({
+        error: error.response?.data?.message || 'Error al actualizar la cita',
+        isLoading: false,
       });
       throw error;
     }
@@ -64,26 +69,25 @@ const useAppointmentStore = create((set) => ({
   cancelAppointment: async (id, motivo = '') => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axiosInstance.patch(`/appointments/${id}/status`, { 
-        estado: 'cancelada', 
-        motivo 
+      const response = await axiosInstance.patch(`/appointments/${id}/status`, {
+        estado: 'cancelada',
+        motivo,
       });
-      
       set((state) => ({
-        appointments: state.appointments.map(app => 
+        appointments: state.appointments.map(app =>
           app._id === id ? { ...app, estado: 'cancelada' } : app
         ),
-        isLoading: false
+        isLoading: false,
       }));
       return response.data;
     } catch (error) {
-      set({ 
-        error: error.response?.data?.message || 'Error al cancelar la cita', 
-        isLoading: false 
+      set({
+        error: error.response?.data?.message || 'Error al cancelar la cita',
+        isLoading: false,
       });
       throw error;
     }
-  }
+  },
 }));
 
 export default useAppointmentStore;
