@@ -15,6 +15,13 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
     defaults:
       run:
         working-directory: ./Frontend
@@ -38,5 +45,34 @@ jobs:
       - name: Run Build
         run: npm run build
 
-      - name: Run Tests
+      - name: Run Unit Tests
         run: npm test -- --run
+
+      - name: Install Backend dependencies
+        run: npm ci
+        working-directory: ./Backend
+
+      - name: Seed Database
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/mediq_test
+          JWT_SECRET: supersecret_test_key_12345
+        run: npm run seed
+        working-directory: ./Backend
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E Tests
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/mediq_test
+          JWT_SECRET: supersecret_test_key_12345
+          PORT: 5001
+        run: npm run test:e2e
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: Frontend/playwright-report/
+          retention-days: 30
