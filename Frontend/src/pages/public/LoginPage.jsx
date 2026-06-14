@@ -59,7 +59,7 @@ export default function LoginPage() {
   const passwordReg = register('contrasena');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {toast.show && (
         <ToastNotification
           message={toast.message}
@@ -143,6 +143,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,5 +1,4 @@
 const Appointment = require('../models/Appointment');
-const Doctor = require('../models/Doctor');
 const { sendSuccess, sendPaginated } = require('../utils/response');
 
 // GET /api/reports/ocupacion

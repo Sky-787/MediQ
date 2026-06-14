@@ -37,7 +37,7 @@ export default function MobileMenu({ isOpen, onClose, children }) {
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-black/50"
         onClick={onClose}
         aria-hidden="true"
       />

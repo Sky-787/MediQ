@@ -13,7 +13,7 @@ on:
       - '.github/workflows/frontend-ci.yml'
 
 jobs:
-  build-and-test:
+  build-test-and-deploy:
     runs-on: ubuntu-latest
     
     services:
@@ -46,7 +46,7 @@ jobs:
         run: npm run build
 
       - name: Run Unit Tests
-        run: npm test -- --run
+        run: npm run test:coverage
 
       - name: Install Backend dependencies
         run: npm ci
@@ -76,3 +76,17 @@ jobs:
           name: playwright-report
           path: Frontend/playwright-report/
           retention-days: 30
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: Frontend/coverage/
+          retention-days: 30
+
+      - name: Trigger Render Frontend Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (secrets.RENDER_FRONTEND_DEPLOY_HOOK != '' || secrets.RENDER_DEPLOY_HOOK != '')
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK || secrets.RENDER_DEPLOY_HOOK }}
+        run: curl -fsS -X POST "$DEPLOY_HOOK"
