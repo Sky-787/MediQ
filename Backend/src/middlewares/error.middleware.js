@@ -4,7 +4,7 @@ const { NODE_ENV } = require('../config/env');
  * Manejador global de errores.
  * Debe ser el ÚLTIMO middleware registrado en app.js.
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res) => {
   let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Error interno del servidor';
 

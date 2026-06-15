@@ -1,19 +1,19 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
 const app = require('../src/app');
 const User = require('../src/models/User');
+const {
+  connectTestDB,
+  clearTestDB,
+  disconnectTestDB,
+} = require('./helpers/testDatabase');
 
 beforeAll(async () => {
-  require('dotenv').config();
-  const uri = process.env.MONGODB_URI 
-    ? process.env.MONGODB_URI.replace('mediq_db', 'mediq_test') 
-    : 'mongodb://127.0.0.1:27017/mediq_test';
-  await mongoose.connect(uri);
-  await User.deleteMany({});
+  await connectTestDB();
+  await clearTestDB(User);
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
+  await disconnectTestDB();
 });
 
 describe('Auth Flow', () => {

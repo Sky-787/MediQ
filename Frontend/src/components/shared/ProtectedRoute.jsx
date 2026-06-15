@@ -1,4 +1,5 @@
 // src/components/shared/ProtectedRoute.jsx
+import { useEffect } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../../stores/useAuthStore'
 
@@ -17,7 +18,13 @@ import { useAuthStore } from '../../stores/useAuthStore'
  *  4. todo OK → <Outlet />
  */
 export default function ProtectedRoute({ allowedRoles }) {
-  const { isAuthenticated, isLoading, user } = useAuthStore()
+  const { isAuthenticated, isLoading, user, checkSession } = useAuthStore()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      checkSession()
+    }
+  }, [checkSession, isAuthenticated])
 
   // 1. Esperando verificación de sesión con /auth/me
   if (isLoading) {

@@ -12,10 +12,24 @@ const routes = require('./routes');
 const { errorHandler, notFound } = require('./middlewares');
 
 const app = express();
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  ...String(CORS_ORIGIN)
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
 
 app.use(
   cors({
-    origin: CORS_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
