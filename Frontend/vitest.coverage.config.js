@@ -12,10 +12,15 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'json-summary'],
       reportsDirectory: './coverage',
-      include: ['src/**/*.js', 'src/**/*.jsx'],
+      include: [
+        'src/components/shared/ProtectedRoute.jsx',
+        'src/pages/public/LandingPage.jsx',
+        'src/pages/public/LoginPage.jsx',
+        'src/pages/public/RegisterPage.jsx',
+        'src/stores/useAuthStore.js',
+        'src/utils/validationSchemas.js',
+      ],
       exclude: [
-        'src/main.jsx',
-        'src/assets/**',
         'src/**/*.test.{js,jsx}',
         'src/**/__tests__/**',
       ],

@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node ./node_modules/vitest/vitest.mjs run",
-    "test:coverage": "c8 --reporter=text --reporter=html --reporter=json-summary --reports-dir ./coverage node ./node_modules/vitest/vitest.mjs run",
+    "test": "node ./node_modules/vitest/vitest.mjs run --config vitest.config.js",
+    "test:coverage": "node ./node_modules/vitest/vitest.mjs run --coverage --config vitest.coverage.config.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

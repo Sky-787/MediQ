@@ -38,22 +38,22 @@ export const useAuthStore = create((set, get) => ({
    */
   login: async (email, password) => {
     try {
-      set({ error: null })
+      set({ error: null, isLoading: true })
       const { data } = await axiosInstance.post('/auth/login', {
         email,
         contrasena: password,
       })
       if (data && data.data) {
-        set({ user: data.data, isAuthenticated: true })
+        set({ user: data.data, isAuthenticated: true, isLoading: false })
       } else {
-        set({ user: data, isAuthenticated: true })
+        set({ user: data, isAuthenticated: true, isLoading: false })
       }
     } catch (error) {
       const mensaje =
         error.response?.data?.message ||
         error.response?.data?.error ||
         'Error al iniciar sesión. Verifica tus credenciales.'
-      set({ error: mensaje })
+      set({ error: mensaje, isLoading: false })
       throw error
     }
   },
@@ -88,7 +88,7 @@ export const useAuthStore = create((set, get) => ({
     } catch {
       // Ignorar errores de red en logout
     } finally {
-      set({ user: null, isAuthenticated: false, error: null })
+      set({ user: null, isAuthenticated: false, isLoading: false, error: null })
     }
   },
 

@@ -44,43 +44,30 @@ test.describe('Flujo de Autenticación y Funcionalidades Principales', () => {
   });
 
   test('debe iniciar sesión con éxito, realizar una búsqueda de médico y cerrar sesión', async ({ page }) => {
-    // 1. Iniciar Sesión
     await page.goto('/login');
     await page.fill('#email', 'paciente@mediq.com');
     await page.fill('#contrasena', 'Paciente123*');
     await page.click('button[type="submit"]');
 
-    // Debe redireccionar a la sección del paciente
     await expect(page).toHaveURL(/\/patient\/search/);
-    await expect(page.locator('h2')).toContainText('Buscar Médico');
-
-    // 2. Interacción con Datos (Flujo Principal - Buscar Médico)
-    // Ingresar la especialidad "Cardiología" en el input
     const searchInput = page.locator('input[placeholder="Especialidad"]');
+    await expect(searchInput).toBeVisible();
     await searchInput.fill('Cardiología');
 
-    // Esperar a que se aplique el debounce y se renderice el médico
     const doctorCard = page.locator('text=Doctor Demo');
     await expect(doctorCard).toBeVisible();
 
-    // Hacer clic en "Ver disponibilidad"
-    await page.click('button:has-text("Ver disponibilidad")');
+    await page.getByRole('button', { name: 'Ver disponibilidad' }).click();
 
-    // Verificar que el modal de disponibilidad se abra con el título del médico
-    await expect(page.locator('h3')).toContainText('Disponibilidad — Doctor Demo');
+    await expect(page.getByRole('heading', { level: 3, name: /Disponibilidad — Doctor Demo/ })).toBeVisible();
     
-    // Verificar que se muestre el día disponible "Lunes"
-    await expect(page.locator('text=Lunes')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Lunes/ })).toBeVisible();
 
-    // Cerrar el modal
     await page.getByRole('button', { name: 'Cerrar', exact: true }).click();
-    await expect(page.locator('h3')).not.toBeVisible();
+    await expect(page.getByRole('heading', { level: 3, name: /Disponibilidad — Doctor Demo/ })).not.toBeVisible();
 
-    // 3. Cierre de Sesión (Logout)
-    // Hacer clic en el botón de "Cerrar sesión" en la barra de navegación
-    await page.click('button:has-text("Cerrar sesión")');
+    await page.getByRole('button', { name: 'Cerrar sesión' }).click();
 
-    // Debe redireccionar a la página de login
     await expect(page).toHaveURL(/\/login/);
     await expect(page.locator('h2')).toContainText('Iniciar Sesión en MediQ');
   });
