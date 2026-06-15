@@ -36,7 +36,16 @@ jobs:
           cache-dependency-path: './Frontend/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --include=optional
+
+      - name: Install required Linux native packages explicitly
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu
+
+      - name: Verify native frontend binaries
+        run: |
+          node -e "console.log(require.resolve('@rollup/rollup-linux-x64-gnu'))"
+          node -e "console.log(require.resolve('lightningcss-linux-x64-gnu'))"
+          node -e "console.log(require.resolve('@tailwindcss/oxide-linux-x64-gnu'))"
 
       - name: Run ESLint
         run: npm run lint
@@ -85,7 +94,12 @@ jobs:
           retention-days: 30
 
       - name: Trigger Render Frontend Deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (secrets.RENDER_FRONTEND_DEPLOY_HOOK != '' || secrets.RENDER_DEPLOY_HOOK != '')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK || secrets.RENDER_DEPLOY_HOOK }}
-        run: curl -fsS -X POST "$DEPLOY_HOOK"
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl -fsS -X POST "$DEPLOY_HOOK"
+          else
+            echo "No frontend deploy hook configured; skipping deploy trigger."
+          fi
