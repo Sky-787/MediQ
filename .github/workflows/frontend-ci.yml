@@ -41,6 +41,9 @@ jobs:
       - name: Install Linux Rollup binary
         run: npm install @rollup/rollup-linux-x64-gnu --no-save
 
+      - name: Install Linux Tailwind native binaries
+        run: npm install lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --no-save
+
       - name: Run ESLint
         run: npm run lint
 
