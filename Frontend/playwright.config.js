@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'npm run dev -- --host 127.0.0.1 --port 5173',
+      command: 'npm run dev -- --host localhost --port 5173',
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,
       gracefulShutdown: {
@@ -28,7 +28,7 @@ export default defineConfig({
       },
       env: {
         ...process.env,
-        VITE_API_URL: process.env.VITE_API_URL || 'http://127.0.0.1:5001/api',
+        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:5001/api',
       },
       stdout: 'ignore',
       stderr: 'pipe',
