@@ -32,6 +32,7 @@ const linkClass = ({ isActive }) =>
       ? 'bg-teal-700 text-white dark:bg-teal-600'
       : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
   }`
+  }`
 
 export default function Navbar() {
   const navigate = useNavigate()

@@ -21,7 +21,6 @@ RUN npm run build
 
 # Podar dependencias de desarrollo para dejar la capa de build más limpia
 RUN npm prune --omit=dev
-
 # Etapa 2: Producción
 FROM node:24-alpine
 
