@@ -11,7 +11,7 @@ on:
       - 'Backend/**'
 
 jobs:
-  build-and-test:
+  build-test-and-deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -24,12 +24,12 @@ jobs:
           - 27017:27017
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20.x'
           cache: 'npm'
           cache-dependency-path: './Backend/package-lock.json'
 
@@ -39,8 +39,22 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run Tests
+      - name: Run Tests with Coverage
         env:
           MONGODB_URI: mongodb://127.0.0.1:27017/mediq_test
           JWT_SECRET: supersecret_test_key_12345
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: Backend/coverage/
+          retention-days: 30
+
+      - name: Trigger Render Backend Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (secrets.RENDER_BACKEND_DEPLOY_HOOK != '' || secrets.RENDER_DEPLOY_HOOK_BACKEND != '')
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK || secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+        run: curl -fsS -X POST "$DEPLOY_HOOK"

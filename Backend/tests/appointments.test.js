@@ -1,21 +1,19 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
 const app = require('../src/app');
 const Appointment = require('../src/models/Appointment');
 const Doctor = require('../src/models/Doctor');
 const User = require('../src/models/User');
+const {
+  connectTestDB,
+  clearTestDB,
+  disconnectTestDB,
+} = require('./helpers/testDatabase');
 
 let doctorDetails, pacienteCookie;
 
 beforeAll(async () => {
-  require('dotenv').config();
-  const uri = process.env.MONGODB_URI 
-    ? process.env.MONGODB_URI.replace('mediq_db', 'mediq_test') 
-    : 'mongodb://127.0.0.1:27017/mediq_test';
-  await mongoose.connect(uri);
-  await Appointment.deleteMany({});
-  await Doctor.deleteMany({});
-  await User.deleteMany({});
+  await connectTestDB();
+  await clearTestDB(Appointment, Doctor, User);
 
   // Crear médico
   const resDoc = await request(app).post('/api/auth/register').send({
@@ -39,7 +37,7 @@ beforeAll(async () => {
   });
 
   // Crear paciente
-  const resPac = await request(app).post('/api/auth/register').send({
+  await request(app).post('/api/auth/register').send({
     nombre: 'Paciente Test', email: 'paciente@test.com', contrasena: '12345678', rol: 'paciente'
   });
   const resLoginPac = await request(app).post('/api/auth/login').send({
@@ -49,7 +47,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
+  await disconnectTestDB();
 });
 
 describe('Appointments Conflict', () => {

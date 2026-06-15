@@ -30,5 +30,7 @@ module.exports = {
   COOKIE_NAME: process.env.COOKIE_NAME || 'token',
   COOKIE_MAX_AGE: parseInt(process.env.COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000,
 
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  CORS_ORIGIN:
+    process.env.CORS_ORIGIN ||
+    'http://localhost:5173,http://localhost:3000',
 };

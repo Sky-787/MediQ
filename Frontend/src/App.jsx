@@ -1,99 +1,104 @@
-// src/App.jsx
-import { BrowserRouter, Navigate, Outlet, Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/shared/ProtectedRoute'
-import Navbar from './components/ui/Navbar'
-import { useAuthStore } from './stores/useAuthStore'
+const PublicNavbar = lazy(() => import('./components/ui/PublicNavbar'))
 import useToastStore from './stores/useToastStore'
 import ToastNotification from './components/shared/ToastNotification'
 
-// Páginas públicas
-import LandingPage from './pages/public/LandingPage'
-import LoginPage from './pages/public/LoginPage'
-import RegisterPage from './pages/public/RegisterPage'
-import NotFoundPage from './pages/public/NotFoundPage'
+const LandingPage = lazy(() => import('./pages/public/LandingPage'))
+const LoginPage = lazy(() => import('./pages/public/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/public/RegisterPage'))
+const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'))
 
-// Páginas del paciente
-import SearchDoctorsPage from './pages/patient/SearchDoctorsPage'
-import BookAppointmentPage from './pages/patient/BookAppointmentPage'
-import MyAppointmentsPage from './pages/patient/MyAppointmentsPage'
+const SearchDoctorsPage = lazy(() => import('./pages/patient/SearchDoctorsPage'))
+const BookAppointmentPage = lazy(() => import('./pages/patient/BookAppointmentPage'))
+const MyAppointmentsPage = lazy(() => import('./pages/patient/MyAppointmentsPage'))
+const PatientLayout = lazy(() => import('./pages/patient/PatientLayout'))
 
-// Páginas del médico
-import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage'
-import AgendaPage from './pages/doctor/AgendaPage'
-import AvailabilityPage from './pages/doctor/AvailabilityPage'
-import NotificationsPage from './pages/doctor/NotificationsPage'
+const DoctorDashboardPage = lazy(() => import('./pages/doctor/DoctorDashboardPage'))
+const AgendaPage = lazy(() => import('./pages/doctor/AgendaPage'))
+const AvailabilityPage = lazy(() => import('./pages/doctor/AvailabilityPage'))
+const NotificationsPage = lazy(() => import('./pages/doctor/NotificationsPage'))
+const DoctorLayout = lazy(() => import('./pages/doctor/DoctorLayout'))
 
-// Páginas del administrador
-import DashboardPage from './pages/admin/DashboardPage'
-import ReportsPage from './pages/admin/ReportsPage'
-import UsersManagementPage from './pages/admin/UsersManagementPage'
-import AdminLayout from './pages/admin/AdminLayout'
-import DoctorLayout from './pages/doctor/DoctorLayout'
-import PatientLayout from './pages/patient/PatientLayout'
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'))
+const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
+const UsersManagementPage = lazy(() => import('./pages/admin/UsersManagementPage'))
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
 
 function PublicLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Suspense fallback={null}>
+        <PublicNavbar />
+      </Suspense>
       <Outlet />
     </div>
   )
 }
 
+function RouteLoader() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="h-10 w-10 rounded-full border-4 border-teal-700 border-t-transparent animate-spin" />
+    </div>
+  )
+}
+
+function LazyElement({ children }) {
+  return <Suspense fallback={<RouteLoader />}>{children}</Suspense>
+}
+
 export default function App() {
-  const checkSession = useAuthStore((state) => state.checkSession)
-  const { toast, hideToast } = useToastStore()
-
-  // Verificar sesión UNA SOLA VEZ al arrancar la app
-  useEffect(() => {
-    checkSession()
-  }, [checkSession])
-
   return (
     <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  )
+}
+
+function AppRoutes() {
+  const { toast, hideToast } = useToastStore()
+
+  return (
+    <>
       <Routes>
-        {/* ── Rutas Públicas ── */}
         <Route element={<PublicLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/" element={<LazyElement><LandingPage /></LazyElement>} />
+          <Route path="/login" element={<LazyElement><LoginPage /></LazyElement>} />
+          <Route path="/register" element={<LazyElement><RegisterPage /></LazyElement>} />
         </Route>
 
-        {/* ── Rutas del Paciente (solo rol 'paciente') ── */}
         <Route element={<ProtectedRoute allowedRoles={['paciente']} />}>
-          <Route path="/patient" element={<PatientLayout />}>
+          <Route path="/patient" element={<LazyElement><PatientLayout /></LazyElement>}>
             <Route index element={<Navigate to="search" replace />} />
-            <Route path="search" element={<SearchDoctorsPage />} />
-            <Route path="book/:doctorId" element={<BookAppointmentPage />} />
-            <Route path="appointments" element={<MyAppointmentsPage />} />
+            <Route path="search" element={<LazyElement><SearchDoctorsPage /></LazyElement>} />
+            <Route path="book/:doctorId" element={<LazyElement><BookAppointmentPage /></LazyElement>} />
+            <Route path="appointments" element={<LazyElement><MyAppointmentsPage /></LazyElement>} />
           </Route>
         </Route>
 
-        {/* ── Rutas del Médico (solo rol 'medico') ── */}
         <Route element={<ProtectedRoute allowedRoles={['medico']} />}>
-          <Route path="/doctor" element={<DoctorLayout />}>
-            <Route index element={<DoctorDashboardPage />} />
-            <Route path="agenda" element={<AgendaPage />} />
-            <Route path="availability" element={<AvailabilityPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="/doctor" element={<LazyElement><DoctorLayout /></LazyElement>}>
+            <Route index element={<LazyElement><DoctorDashboardPage /></LazyElement>} />
+            <Route path="agenda" element={<LazyElement><AgendaPage /></LazyElement>} />
+            <Route path="availability" element={<LazyElement><AvailabilityPage /></LazyElement>} />
+            <Route path="notifications" element={<LazyElement><NotificationsPage /></LazyElement>} />
           </Route>
         </Route>
 
-        {/* ── Rutas del Administrador (solo rol 'admin') ── */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={<LazyElement><AdminLayout /></LazyElement>}>
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="users" element={<UsersManagementPage />} />
+            <Route path="dashboard" element={<LazyElement><DashboardPage /></LazyElement>} />
+            <Route path="reports" element={<LazyElement><ReportsPage /></LazyElement>} />
+            <Route path="users" element={<LazyElement><UsersManagementPage /></LazyElement>} />
           </Route>
         </Route>
 
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path="*" element={<LazyElement><NotFoundPage /></LazyElement>} />
       </Routes>
 
-      {/* ── Toast Global ── */}
       {toast.show && (
         <ToastNotification
           message={toast.message}
@@ -101,6 +106,6 @@ export default function App() {
           onClose={hideToast}
         />
       )}
-    </BrowserRouter>
+    </>
   )
 }
