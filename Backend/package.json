@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "start:e2e": "node src/server.e2e.js",
     "test": "node ./node_modules/jest/bin/jest.js --runInBand",
     "test:coverage": "node ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "lint": "eslint \"src/**/*.js\" \"tests/**/*.js\"",

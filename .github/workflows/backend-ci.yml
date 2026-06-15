@@ -54,7 +54,12 @@ jobs:
           retention-days: 30
 
       - name: Trigger Render Backend Deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (secrets.RENDER_BACKEND_DEPLOY_HOOK != '' || secrets.RENDER_DEPLOY_HOOK_BACKEND != '')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK || secrets.RENDER_DEPLOY_HOOK_BACKEND }}
-        run: curl -fsS -X POST "$DEPLOY_HOOK"
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl -fsS -X POST "$DEPLOY_HOOK"
+          else
+            echo "No backend deploy hook configured; skipping deploy trigger."
+          fi
