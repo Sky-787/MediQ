@@ -36,13 +36,13 @@ jobs:
           cache-dependency-path: './Frontend/package-lock.json'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=optional
 
-      - name: Install Linux Rollup binary
-        run: npm install @rollup/rollup-linux-x64-gnu --no-save
-
-      - name: Install Linux Tailwind native binaries
-        run: npm install lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --no-save
+      - name: Verify native frontend binaries
+        run: |
+          node -e "console.log(require.resolve('@rollup/rollup-linux-x64-gnu'))"
+          node -e "console.log(require.resolve('lightningcss-linux-x64-gnu'))"
+          node -e "console.log(require.resolve('@tailwindcss/oxide-linux-x64-gnu'))"
 
       - name: Run ESLint
         run: npm run lint
