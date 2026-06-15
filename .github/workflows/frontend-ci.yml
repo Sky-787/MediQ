@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Linux Rollup binary
+        run: npm install @rollup/rollup-linux-x64-gnu --no-save
+
       - name: Run ESLint
         run: npm run lint
 
