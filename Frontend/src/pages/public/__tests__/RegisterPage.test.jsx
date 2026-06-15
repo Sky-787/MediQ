@@ -95,6 +95,26 @@ describe('RegisterPage', () => {
     });
   });
 
+  it('usa data.error cuando el backend responde con esa forma', async () => {
+    mockRegister.mockRejectedValueOnce({
+      response: { data: { error: 'Registro deshabilitado' } },
+    });
+
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText('Nombre completo'), { target: { value: 'Laura' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'laura@mediq.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Clave123*' } });
+    fireEvent.change(screen.getByLabelText('Confirmar Contraseña'), {
+      target: { value: 'Clave123*' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith('Registro deshabilitado', 'error');
+    });
+  });
+
   it('calcula fortalezas debil y media segun la contraseña escrita', () => {
     render(<RegisterPage />);
 
@@ -129,4 +149,90 @@ describe('RegisterPage', () => {
       );
     });
   });
+
+  it('muestra error de nombre inválido y no envía el formulario', async () => {
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText('Nombre completo'), { target: { value: 'A' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'laura@mediq.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Clave123*' } });
+    fireEvent.change(screen.getByLabelText('Confirmar Contraseña'), {
+      target: { value: 'Clave123*' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('El nombre debe tener al menos 2 caracteres'),
+      ).toBeInTheDocument();
+    });
+
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('muestra error de contraseña corta y no envía el formulario', async () => {
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText('Nombre completo'), { target: { value: 'Laura' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'laura@mediq.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: '123' } });
+    fireEvent.change(screen.getByLabelText('Confirmar Contraseña'), {
+      target: { value: '123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Mínimo 6 caracteres')).toBeInTheDocument();
+    });
+
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('muestra error cuando las contraseñas no coinciden y no registra', async () => {
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText('Nombre completo'), { target: { value: 'Laura' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'laura@mediq.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Clave123' } });
+    fireEvent.change(screen.getByLabelText('Confirmar Contraseña'), {
+      target: { value: 'Otra123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Las contraseñas no coinciden')).toBeInTheDocument();
+    });
+
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('muestra estado de envío mientras el registro está pendiente', async () => {
+    let resolvePromise;
+    mockRegister.mockImplementationOnce(
+      () => new Promise((resolve) => {
+        resolvePromise = resolve;
+      }),
+    );
+
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText('Nombre completo'), { target: { value: 'Laura' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'laura@mediq.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Clave123*' } });
+    fireEvent.change(screen.getByLabelText('Confirmar Contraseña'), {
+      target: { value: 'Clave123*' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Creando cuenta...' })).toBeDisabled();
+    });
+
+    await act(async () => {
+      resolvePromise();
+      await Promise.resolve();
+    });
+  });
 });
+
+
