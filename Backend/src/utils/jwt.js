@@ -9,7 +9,7 @@ const sendTokenCookie = (res, token) => {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     secure: NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'none',
     maxAge: COOKIE_MAX_AGE,
   });
 };
@@ -18,7 +18,7 @@ const clearTokenCookie = (res) => {
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
     secure: NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'none',
   });
 };
 
