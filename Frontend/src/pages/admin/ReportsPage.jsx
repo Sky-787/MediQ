@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   PieChart, Pie, Cell, ResponsiveContainer
 } from 'recharts';
-import { Calendar, FileText, FileSpreadsheet } from 'lucide-react';
+import { Calendar, FileText } from 'lucide-react';
 import useApi from '../../hooks/useApi';
 import useToastStore from '../../stores/useToastStore';
 import CustomCard from '../../components/ui/CustomCard';
@@ -59,40 +59,123 @@ const ReportsPage = () => {
   const loadPeriodData = useCallback(async () => {
     if (!initialLoadComplete) return;
     try {
-      const response = await fetchData({ url: '/reports/periodo', params: dateRange });
+      const response = await fetchData({
+        url: '/reports/periodo',
+        params: {
+          inicio: dateRange.startDate,
+          fin: dateRange.endDate,
+        },
+      });
       if (!isMounted.current) return;
-      const transformed = response.data?.map(item => ({
-        fecha: new Date(item.fecha).toLocaleDateString('es-CO'),
-        citas: item.total || 0
-      })) || [];
+      const groupedByDate = (response.data || []).reduce((accumulator, item) => {
+        const dateKey = new Date(item.fechaHora).toLocaleDateString('es-CO');
+        accumulator[dateKey] = (accumulator[dateKey] || 0) + 1;
+        return accumulator;
+      }, {});
+
+      const transformed = Object.entries(groupedByDate).map(([fecha, citas]) => ({
+        fecha,
+        citas,
+      }));
       setPeriodData(transformed);
     } catch {
       if (isMounted.current) showToast('Error al cargar datos del período', 'error');
     }
   }, [fetchData, dateRange, showToast, initialLoadComplete]);
 
-  const handleExportCSV = useCallback(() => {
-    try {
-      const headers = ['Médico', 'Total Citas', 'Especialidad', 'Fecha'];
-      const rows = [];
-      specialtyData.forEach(spec => rows.push([spec.name, spec.value, spec.name, '']));
-      occupancyData.forEach(occ => rows.push([occ.name, occ.citas, '', '']));
-      periodData.forEach(period => rows.push(['', '', '', period.fecha, period.citas]));
-      const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reporte-mediq-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      showToast('Reporte exportado exitosamente', 'success');
-    } catch {
-      showToast('Error al exportar el reporte', 'error');
-    }
-  }, [specialtyData, occupancyData, periodData, showToast]);
+  const handlePrint = useCallback(() => {
+    const printWindow = window.open('', '_blank', 'width=980,height=760');
 
-  const handlePrint = useCallback(() => { window.print(); }, []);
+    if (!printWindow) {
+      showToast('No se pudo abrir la vista de impresión', 'error');
+      return;
+    }
+
+    const generatedAt = new Date().toLocaleString('es-CO');
+    const topDoctors = occupancyData
+      .slice()
+      .sort((a, b) => b.citas - a.citas)
+      .slice(0, 5);
+    const topSpecialties = specialtyData
+      .slice()
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Reporte MediQ</title>
+          <meta charset="UTF-8" />
+          <style>
+            body { font-family: Arial, sans-serif; color: #0f172a; padding: 32px; }
+            h1 { margin: 0 0 8px; color: #0f766e; }
+            h2 { margin: 28px 0 10px; font-size: 18px; color: #1e293b; }
+            p { margin: 4px 0; color: #475569; }
+            .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+            .card { border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; background: #f8fafc; }
+            .label { font-size: 12px; text-transform: uppercase; color: #0f766e; font-weight: 700; }
+            .value { font-size: 28px; font-weight: 700; margin-top: 8px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            th, td { border: 1px solid #d1d5db; padding: 10px 12px; text-align: left; }
+            th { background: #0f766e; color: white; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte MediQ</h1>
+          <p>Generado el ${generatedAt}</p>
+          <p>Periodo analizado: ${dateRange.startDate} al ${dateRange.endDate}</p>
+
+          <div class="summary">
+            <div class="card">
+              <div class="label">Médicos con citas</div>
+              <div class="value">${occupancyData.length}</div>
+            </div>
+            <div class="card">
+              <div class="label">Especialidades activas</div>
+              <div class="value">${specialtyData.length}</div>
+            </div>
+            <div class="card">
+              <div class="label">Días con citas</div>
+              <div class="value">${periodData.length}</div>
+            </div>
+          </div>
+
+          <h2>Top médicos por ocupación</h2>
+          <table>
+            <thead>
+              <tr><th>Médico</th><th>Total citas</th></tr>
+            </thead>
+            <tbody>
+              ${topDoctors.map((item) => `<tr><td>${item.name}</td><td>${item.citas}</td></tr>`).join('')}
+            </tbody>
+          </table>
+
+          <h2>Top especialidades</h2>
+          <table>
+            <thead>
+              <tr><th>Especialidad</th><th>Total citas</th></tr>
+            </thead>
+            <tbody>
+              ${topSpecialties.map((item) => `<tr><td>${item.name}</td><td>${item.value}</td></tr>`).join('')}
+            </tbody>
+          </table>
+
+          <h2>Resumen por fecha</h2>
+          <table>
+            <thead>
+              <tr><th>Fecha</th><th>Total citas</th></tr>
+            </thead>
+            <tbody>
+              ${periodData.map((item) => `<tr><td>${item.fecha}</td><td>${item.citas}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  }, [dateRange.endDate, dateRange.startDate, occupancyData, periodData, showToast, specialtyData]);
 
   useEffect(() => {
     let isActive = true;
@@ -123,13 +206,9 @@ const ReportsPage = () => {
         </div>
 
         <div className="flex flex-wrap justify-end gap-2 sm:gap-3 mb-4 sm:mb-6 print:hidden">
-          <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Exportar CSV</span>
-          </button>
           <button onClick={handlePrint} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
             <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Imprimir / PDF</span>
+            <span className="hidden sm:inline">Vista PDF resumida</span>
             <span className="sm:hidden">PDF</span>
           </button>
         </div>
