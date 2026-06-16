@@ -28,6 +28,7 @@ const DashboardPage = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
 
   const isMounted = useRef(true);
   const hasRedirected = useRef(false);
@@ -128,6 +129,30 @@ const DashboardPage = () => {
       if (isMounted.current) showToast('Error al cancelar la cita', 'error');
     }
   }, [fetchData, showToast, loadDashboardData]);
+
+  const handleOpenEditModal = useCallback((apt) => {
+    setSelectedAppointment(apt);
+    setNewStatus(apt.estado);
+    setShowAssignModal(true);
+  }, []);
+
+  const handleUpdateStatus = useCallback(async () => {
+    if (!selectedAppointment) return;
+    try {
+      await fetchData({
+        url: `/appointments/${selectedAppointment._id}/status`,
+        method: 'PATCH',
+        data: { estado: newStatus },
+      });
+      if (isMounted.current) {
+        showToast('Estado de la cita actualizado exitosamente', 'success');
+        setShowAssignModal(false);
+        await loadDashboardData();
+      }
+    } catch {
+      if (isMounted.current) showToast('Error al actualizar el estado de la cita', 'error');
+    }
+  }, [fetchData, selectedAppointment, newStatus, showToast, loadDashboardData]);
 
   const getStatusBadge = useCallback((status) => {
     const variants = { confirmada: 'success', pendiente: 'warning', cancelada: 'danger', completada: 'info' };
@@ -252,7 +277,7 @@ const DashboardPage = () => {
                         <td className="px-4 sm:px-6 py-4">{apt.estado ? getStatusBadge(apt.estado) : 'N/A'}</td>
                         <td className="px-4 sm:px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <button onClick={() => { setSelectedAppointment(apt); setShowAssignModal(true); }} className="p-1 text-gray-600 hover:text-teal-700 hover:bg-teal-50 dark:text-gray-400 dark:hover:text-teal-400 dark:hover:bg-teal-900/30 rounded transition-colors" title="Editar cita">
+                            <button onClick={() => handleOpenEditModal(apt)} className="p-1 text-gray-600 hover:text-teal-700 hover:bg-teal-50 dark:text-gray-400 dark:hover:text-teal-400 dark:hover:bg-teal-900/30 rounded transition-colors" title="Editar cita">
                               <Edit className="w-4 h-4" />
                             </button>
                             {apt.estado !== 'cancelada' && apt.estado !== 'completada' && (
@@ -282,7 +307,7 @@ const DashboardPage = () => {
             </div>
             <div>
               <label htmlFor="selected-appointment-status" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select id="selected-appointment-status" defaultValue={selectedAppointment.estado} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              <select id="selected-appointment-status" value={newStatus} onChange={e => setNewStatus(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 <option value="pendiente">Pendiente</option>
                 <option value="confirmada">Confirmada</option>
                 <option value="cancelada">Cancelada</option>
@@ -291,7 +316,7 @@ const DashboardPage = () => {
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <button onClick={() => setShowAssignModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
-              <button onClick={() => setShowAssignModal(false)} className="px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors">Guardar cambios</button>
+              <button onClick={handleUpdateStatus} className="px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors">Guardar cambios</button>
             </div>
           </div>
         )}
