@@ -1,3 +1,6 @@
+// Debe estar ANTES de cualquier require para que los módulos lo lean correctamente
+process.env.NODE_ENV = 'e2e';
+
 require('dotenv').config();
 
 const mongoose = require('mongoose');
