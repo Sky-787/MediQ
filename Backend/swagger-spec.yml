@@ -6,11 +6,16 @@ info:
     API REST para la gestión de citas médicas, usuarios y médicos de la
     plataforma MediQ. La autenticación se realiza mediante JWT almacenado
     en una cookie HTTP-only (`token`).
+    En Swagger UI, primero ejecuta `/auth/login` o `/auth/register` con
+    "Try it out"; no uses el botón "Authorize" para pegar el token, porque
+    la API no lee el JWT desde un header manual sino desde la cookie de sesión.
   version: 1.0.0
   contact:
     name: MediQ Dev Team
 
 servers:
+  - url: /api
+    description: Mismo origen del servidor actual (recomendado para despliegue)
   - url: http://localhost:5000/api
     description: Servidor local de desarrollo
 
@@ -144,7 +149,7 @@ components:
           example: secreto123
         rol:
           type: string
-          enum: [paciente, medico, admin]
+          enum: [paciente, medico]
           default: paciente
 
     LoginBody:
@@ -634,8 +639,6 @@ paths:
       tags: [Auth]
       summary: Cerrar sesión (limpia la cookie JWT)
       operationId: logout
-      security:
-        - cookieAuth: []
       responses:
         '200':
           description: Sesión cerrada. La cookie `token` es eliminada.
@@ -650,8 +653,6 @@ paths:
                   message:
                     type: string
                     example: Sesión cerrada correctamente
-        '401':
-          $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -715,6 +716,15 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '409':
+          description: El médico ya tiene otra cita activa en ese mismo horario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                horarioOcupado:
+                  value: { success: false, message: "El médico ya tiene una cita en ese horario" }
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -1154,7 +1164,7 @@ paths:
 
     delete:
       tags: [Appointments]
-      summary: Eliminar una cita (usuario autenticado)
+      summary: Eliminar una cita (solo admin)
       operationId: deleteAppointment
       security:
         - cookieAuth: []
@@ -1176,6 +1186,8 @@ paths:
                     example: Cita eliminada correctamente
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':

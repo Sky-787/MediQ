@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
@@ -19,9 +19,24 @@ const calculateStrength = (password) => {
   return { text: 'Débil', color: 'bg-red-500', width: 'w-1/3' };
 };
 
+function getRouteByRole(role) {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'medico':
+      return '/doctor';
+    case 'paciente':
+      return '/patient/search';
+    default:
+      return '/';
+  }
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const registerAction = useAuthStore((state) => state.register);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const showToast = useToastStore((state) => state.showToast);
 
   const {
@@ -40,6 +55,12 @@ export default function RegisterPage() {
     defaultValue: '',
   });
   const strength = calculateStrength(watchPassword);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.rol) {
+      navigate(getRouteByRole(user.rol), { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const onSubmit = async (data) => {
     try {

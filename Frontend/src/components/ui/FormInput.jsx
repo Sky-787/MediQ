@@ -8,11 +8,14 @@ const FormInput = ({
   type = "text",
   placeholder,
 }) => {
+  const inputId = `field-${name}`;
+
   return (
     <div className="flex flex-col mb-4">
-      {label && <label className="mb-1 font-medium">{label}</label>}
+      {label && <label htmlFor={inputId} className="mb-1 font-medium">{label}</label>}
 
       <input
+        id={inputId}
         type={type}
         placeholder={placeholder}
         {...register(name)}

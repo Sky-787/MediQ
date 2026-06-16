@@ -1,13 +1,14 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/shared/ProtectedRoute'
-const PublicNavbar = lazy(() => import('./components/ui/PublicNavbar'))
+import PublicNavbar from './components/ui/PublicNavbar'
 import useToastStore from './stores/useToastStore'
 import ToastNotification from './components/shared/ToastNotification'
+import { useAuthStore } from './stores/useAuthStore'
 
-const LandingPage = lazy(() => import('./pages/public/LandingPage'))
-const LoginPage = lazy(() => import('./pages/public/LoginPage'))
-const RegisterPage = lazy(() => import('./pages/public/RegisterPage'))
+import LandingPage from './pages/public/LandingPage'
+import LoginPage from './pages/public/LoginPage'
+import RegisterPage from './pages/public/RegisterPage'
 const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'))
 
 const SearchDoctorsPage = lazy(() => import('./pages/patient/SearchDoctorsPage'))
@@ -29,9 +30,7 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
 function PublicLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Suspense fallback={null}>
-        <PublicNavbar />
-      </Suspense>
+      <PublicNavbar />
       <Outlet />
     </div>
   )
@@ -59,14 +58,19 @@ export default function App() {
 
 function AppRoutes() {
   const { toast, hideToast } = useToastStore()
+  const checkSession = useAuthStore((state) => state.checkSession)
+
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
 
   return (
     <>
       <Routes>
         <Route element={<PublicLayout />}>
-          <Route path="/" element={<LazyElement><LandingPage /></LazyElement>} />
-          <Route path="/login" element={<LazyElement><LoginPage /></LazyElement>} />
-          <Route path="/register" element={<LazyElement><RegisterPage /></LazyElement>} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['paciente']} />}>

@@ -5,6 +5,12 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import ThemeToggle from './ThemeToggle';
 import MobileMenu from './MobileMenu';
 
+function formatRole(role) {
+  if (!role) return ''
+  const map = { medico: 'Médico', paciente: 'Paciente', admin: 'Administrador' }
+  return map[role] || role
+}
+
 const navItems = [
   { path: '/doctor/agenda',        label: 'Agenda',          icon: Calendar },
   { path: '/doctor/availability',  label: 'Disponibilidad',  icon: Clock },
@@ -21,7 +27,7 @@ const itemClass = ({ isActive }) =>
   }`;
 
 const DoctorNavbar = () => {
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -38,9 +44,17 @@ const DoctorNavbar = () => {
           {/* Logo → Landing Page */}
           <Link
             to="/"
-            className="text-xl font-bold text-teal-700 dark:text-teal-400 shrink-0 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 shrink-0 hover:opacity-80 transition-opacity"
           >
-            MediQ · Médicos
+            <span className="text-xl font-bold text-teal-700 dark:text-teal-400">MediQ</span>
+            <span className="hidden md:flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 max-w-[140px] truncate">
+                {user?.nombre || 'Usuario'}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {formatRole(user?.rol || user?.role)}
+              </span>
+            </span>
           </Link>
 
           {/* Desktop links */}
