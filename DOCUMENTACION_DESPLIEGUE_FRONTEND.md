@@ -24,8 +24,8 @@ MediQ/                          ← Raíz del repositorio
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── Dockerfile
-│   ├── .env                    ← Variables locales (no se sube a GitHub)
-│   └── .env.production         ← Variables de producción ✅ CREADO
+│   ├── .env                    ← Variables locales (excluido de Git)
+│   └── .env.production         ← Variables de producción (excluido de Git, configurado en Render)
 ├── docker-compose.yml          ← Para desarrollo local con Docker
 ├── render.yaml                 ← Configuración de Render ✅ CREADO
 └── README.md
@@ -56,15 +56,15 @@ services:
         sync: false
 ```
 
-### 2. `Frontend/.env.production`
+### 2. `Frontend/.env.production` (Excluido de Git)
 
-Variable de entorno apuntando al backend en producción:
+Archivo local (no rastreado en Git) con la variable de entorno apuntando al backend en producción:
 
 ```
 VITE_API_URL=https://mediq-backend.onrender.com/api
 ```
 
-> ⚠️ Actualizar con la URL real del backend cuando esté desplegado.
+> ⚠️ Nota: Siguiendo los principios de 12-Factor App, este archivo está excluido de Git. La URL real en producción se configura directamente en el panel de control de las variables de entorno de Render.
 
 ---
 
