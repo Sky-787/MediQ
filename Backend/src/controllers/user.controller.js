@@ -1,5 +1,71 @@
 const User = require('../models/User');
-const { sendSuccess, sendPaginated } = require('../utils/response');
+const Doctor = require('../models/Doctor');
+const { sendSuccess, sendCreated, sendPaginated } = require('../utils/response');
+
+const createRegistroMedico = () =>
+  `RM-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+
+const enrichUsersWithDoctorData = async (users) => {
+  if (!users.length) return [];
+
+  const userIds = users.map((user) => user._id);
+  const doctors = await Doctor.find({ userId: { $in: userIds } })
+    .select('userId especialidad registroMedico');
+
+  const doctorByUserId = new Map(
+    doctors.map((doctor) => [doctor.userId.toString(), doctor])
+  );
+
+  return users.map((user) => {
+    const doctor = doctorByUserId.get(user._id.toString());
+
+    return {
+      ...user.toObject(),
+      especialidad: doctor?.especialidad || null,
+      registroMedico: doctor?.registroMedico || null,
+    };
+  });
+};
+
+// POST /api/users
+const createUser = async (req, res, next) => {
+  let user = null;
+
+  try {
+    const { nombre, email, contrasena, rol, especialidad } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'El email ya está registrado',
+      });
+    }
+
+    user = await User.create({ nombre, email, contrasena, rol });
+
+    let doctor = null;
+    if (rol === 'medico') {
+      doctor = await Doctor.create({
+        userId: user._id,
+        especialidad,
+        registroMedico: createRegistroMedico(),
+        disponibilidad: [],
+      });
+    }
+
+    sendCreated(res, {
+      ...user.toObject(),
+      especialidad: doctor?.especialidad || null,
+      registroMedico: doctor?.registroMedico || null,
+    }, 'Usuario creado correctamente');
+  } catch (error) {
+    if (user?._id) {
+      await User.findByIdAndDelete(user._id).catch(() => {});
+    }
+    next(error);
+  }
+};
 
 // GET /api/users
 const getUsers = async (req, res, next) => {
@@ -13,7 +79,9 @@ const getUsers = async (req, res, next) => {
       User.countDocuments(),
     ]);
 
-    sendPaginated(res, users, total, page, limit);
+    const enrichedUsers = await enrichUsersWithDoctorData(users);
+
+    sendPaginated(res, enrichedUsers, total, page, limit);
   } catch (error) {
     next(error);
   }
@@ -26,7 +94,9 @@ const getUserById = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     }
-    sendSuccess(res, user);
+
+    const [enrichedUser] = await enrichUsersWithDoctorData([user]);
+    sendSuccess(res, enrichedUser);
   } catch (error) {
     next(error);
   }
@@ -66,4 +136,4 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getUsers, getUserById, updateUser, deleteUser };
+module.exports = { createUser, getUsers, getUserById, updateUser, deleteUser };
