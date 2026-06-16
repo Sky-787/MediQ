@@ -6,19 +6,21 @@ const generateToken = (userId) => {
 };
 
 const sendTokenCookie = (res, token) => {
+  const isProduction = NODE_ENV === 'production';
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: COOKIE_MAX_AGE,
   });
 };
 
 const clearTokenCookie = (res) => {
+  const isProduction = NODE_ENV === 'production';
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    secure: NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
   });
 };
 
