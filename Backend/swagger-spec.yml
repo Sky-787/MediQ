@@ -18,6 +18,8 @@ servers:
     description: Mismo origen del servidor actual (recomendado para despliegue)
   - url: http://localhost:5000/api
     description: Servidor local de desarrollo
+  - url: 'https://mediq-backend-gkkp.onrender.com'
+    description: 'Servidor de producción en Render'
 
 # ─────────────────────────────────────────────
 # SECURITY
