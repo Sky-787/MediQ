@@ -35,11 +35,18 @@ const getUserById = async (req, res, next) => {
 // PUT /api/users/:id
 const updateUser = async (req, res, next) => {
   try {
-    const { nombre, email } = req.body;
+    const { nombre, email, rol } = req.body;
+
+    const updateData = {};
+    if (nombre !== undefined) updateData.nombre = nombre;
+    if (email !== undefined) updateData.email = email;
+    if (rol !== undefined && req.user.rol === 'admin') {
+      updateData.rol = rol;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { nombre, email },
+      updateData,
       { new: true, runValidators: true }
     );
 

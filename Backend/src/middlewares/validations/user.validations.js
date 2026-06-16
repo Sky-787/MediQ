@@ -15,6 +15,10 @@ const validateUpdateUser = [
     .isEmail()
     .withMessage('Email inválido')
     .normalizeEmail(),
+  body('rol')
+    .optional()
+    .isIn(['paciente', 'medico', 'admin'])
+    .withMessage('Rol inválido'),
   validateRequest,
 ];
 
