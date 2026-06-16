@@ -39,3 +39,25 @@ Sigue estos pasos para levantar el entorno de desarrollo local:
 1. **Entrar a la carpeta del servidor:**
    ```bash
    cd Backend
+   ```
+
+2. **Configurar las variables de entorno:**
+   Copia el archivo de plantilla `.env.example` a un nuevo archivo `.env` (el cual está excluido del control de versiones bajo los principios de 12-Factor App) y completa los valores correspondientes:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
+
+4. **Sembrar la base de datos (opcional):**
+   ```bash
+   npm run seed
+   ```
+
+5. **Iniciar el servidor en desarrollo:**
+   ```bash
+   npm run dev
+   ```
