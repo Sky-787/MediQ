@@ -54,7 +54,7 @@ const authLimiter = rateLimit({
     success: false,
     message: 'Demasiados intentos. Intenta de nuevo en 15 minutos.',
   },
-  skip: () => NODE_ENV === 'test', // no limitar en tests
+  skip: () => NODE_ENV === 'test' || NODE_ENV === 'e2e', // no limitar en tests ni e2e
 });
 
 app.use('/api/auth/login', authLimiter);

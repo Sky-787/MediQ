@@ -16,11 +16,6 @@ jobs:
   build-test-and-deploy:
     runs-on: ubuntu-latest
     
-    services:
-      mongodb:
-        image: mongo:latest
-        ports:
-          - 27017:27017
     defaults:
       run:
         working-directory: ./Frontend
@@ -56,15 +51,9 @@ jobs:
       - name: Run Unit Tests
         run: npm run test:coverage
 
+
       - name: Install Backend dependencies
         run: npm ci
-        working-directory: ./Backend
-
-      - name: Seed Database
-        env:
-          MONGODB_URI: mongodb://127.0.0.1:27017/mediq_test
-          JWT_SECRET: supersecret_test_key_12345
-        run: npm run seed
         working-directory: ./Backend
 
       - name: Install Playwright Browsers
