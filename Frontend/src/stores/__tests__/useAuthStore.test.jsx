@@ -107,6 +107,18 @@ describe('useAuthStore', () => {
     expect(useAuthStore.getState().isLoading).toBe(false);
   });
 
+  it('login usa data.error cuando el backend responde con ese formato', async () => {
+    mockPost.mockRejectedValueOnce({
+      response: {
+        data: { error: 'Usuario bloqueado' },
+      },
+    });
+
+    await expect(useAuthStore.getState().login('nora@mediq.com', 'mal')).rejects.toBeTruthy();
+    expect(useAuthStore.getState().error).toBe('Usuario bloqueado');
+    expect(useAuthStore.getState().isLoading).toBe(false);
+  });
+
   it('login usa mensaje genérico cuando falla sin response', async () => {
     mockPost.mockRejectedValueOnce(new Error('network'));
 
@@ -160,6 +172,24 @@ describe('useAuthStore', () => {
       error: 'x',
     });
     mockPost.mockRejectedValueOnce(new Error('network'));
+
+    await useAuthStore.getState().logout();
+
+    const state = useAuthStore.getState();
+    expect(mockPost).toHaveBeenCalledWith('/auth/logout');
+    expect(state.user).toBeNull();
+    expect(state.isAuthenticated).toBe(false);
+    expect(state.error).toBeNull();
+  });
+
+  it('logout cierra sesion en backend y limpia el store cuando responde correctamente', async () => {
+    useAuthStore.setState({
+      user: { _id: 'u3', rol: 'medico' },
+      isAuthenticated: true,
+      isLoading: false,
+      error: 'x',
+    });
+    mockPost.mockResolvedValueOnce({});
 
     await useAuthStore.getState().logout();
 

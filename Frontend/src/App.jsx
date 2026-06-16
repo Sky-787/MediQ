@@ -7,8 +7,8 @@ import ToastNotification from './components/shared/ToastNotification'
 import { useAuthStore } from './stores/useAuthStore'
 
 import LandingPage from './pages/public/LandingPage'
-import LoginPage from './pages/public/LoginPage'
-import RegisterPage from './pages/public/RegisterPage'
+const LoginPage = lazy(() => import('./pages/public/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/public/RegisterPage'))
 const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'))
 
 const SearchDoctorsPage = lazy(() => import('./pages/patient/SearchDoctorsPage'))
@@ -69,8 +69,8 @@ function AppRoutes() {
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LazyElement><LoginPage /></LazyElement>} />
+          <Route path="/register" element={<LazyElement><RegisterPage /></LazyElement>} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['paciente']} />}>
