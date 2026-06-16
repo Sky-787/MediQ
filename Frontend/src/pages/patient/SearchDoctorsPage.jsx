@@ -212,6 +212,7 @@ export default function SearchDoctorsPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="text"
+          aria-label="Filtrar por especialidad"
           placeholder="Especialidad"
           value={especialidadInput}
           onChange={e => setEspecialidadInput(e.target.value)}
@@ -220,6 +221,7 @@ export default function SearchDoctorsPage() {
 
         <input
           type="date"
+          aria-label="Filtrar por fecha"
           value={fecha}
           onChange={e => setFecha(e.target.value)}
           className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-sm w-full sm:w-auto"

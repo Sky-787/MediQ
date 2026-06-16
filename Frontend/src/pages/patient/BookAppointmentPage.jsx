@@ -47,6 +47,11 @@ function ConfirmModal({ doctor, seleccion, motivo, onCancel, onConfirm, loading,
           <span className="font-medium">Motivo:</span> {motivo}
         </p>
         {error && <p className="text-red-500 dark:text-red-400 text-sm mb-3">{error}</p>}
+        {!error && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Si el horario ya fue tomado por otro paciente, te mostraremos una alerta para elegir otro.
+          </p>
+        )}
         <div className="flex gap-3">
           <button
             onClick={onCancel}
@@ -103,6 +108,8 @@ export default function BookAppointmentPage() {
   }, [doctorId, showToast]);
 
   const handleConfirm = async () => {
+    if (!selectedSlot || isLoading) return;
+
     try {
       // Construir fechaHora válida que el backend acepta
       const fechaHora = buildFechaHora(selectedSlot.dia, selectedSlot.horario);
@@ -114,8 +121,13 @@ export default function BookAppointmentPage() {
       });
       setSuccess(true);
       setShowModal(false);
-    } catch {
-      showToast('Error al reservar. Intenta de nuevo.', 'error');
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        error ||
+        'Error al reservar. Intenta de nuevo.';
+
+      showToast(message, 'error');
     }
   };
 
@@ -186,6 +198,7 @@ export default function BookAppointmentPage() {
             {selectedSlot ? selectedSlot.horario : 'No seleccionado'}
           </p>
           <textarea
+            aria-label="Motivo de la consulta"
             placeholder="Motivo de la consulta (mínimo 10 caracteres)"
             value={motivo}
             onChange={e => setMotivo(e.target.value)}

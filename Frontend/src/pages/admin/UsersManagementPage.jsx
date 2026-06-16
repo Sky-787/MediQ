@@ -87,19 +87,20 @@ const UsersManagementPage = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
+              aria-label="Buscar por nombre o email"
               placeholder="Buscar por nombre o email"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             />
           </div>
-          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+          <select aria-label="Filtrar usuarios por rol" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
             <option value="todos">Todos los roles</option>
             <option value="admin">Admin</option>
             <option value="medico">Médico</option>
             <option value="paciente">Paciente</option>
           </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+          <select aria-label="Filtrar usuarios por estado" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
             <option value="todos">Todos los estados</option>
             <option value="activo">Activo</option>
             <option value="inactivo">Inactivo</option>
@@ -139,7 +140,7 @@ const UsersManagementPage = () => {
                       <td className="px-6 py-4">
                         {editingRole.userId === user._id ? (
                           <div className="flex items-center gap-2">
-                            <select value={editingRole.role} onChange={(e) => setEditingRole({ userId: user._id, role: e.target.value })} className="text-sm border border-gray-300 rounded px-2 py-1" autoFocus>
+                            <select aria-label={`Cambiar rol de ${user.nombre}`} value={editingRole.role} onChange={(e) => setEditingRole({ userId: user._id, role: e.target.value })} className="text-sm border border-gray-300 rounded px-2 py-1" autoFocus>
                               <option value="admin">Admin</option>
                               <option value="medico">Médico</option>
                               <option value="paciente">Paciente</option>

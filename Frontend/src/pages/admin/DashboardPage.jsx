@@ -202,17 +202,17 @@ const DashboardPage = () => {
             <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Filtros de Citas</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-            <input type="text" placeholder="Médico" value={filters.doctor} onChange={e => handleFilterChange('doctor', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
-            <input type="text" placeholder="Especialidad" value={filters.specialty} onChange={e => handleFilterChange('specialty', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
-            <select value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm">
+            <input type="text" aria-label="Filtrar por médico" placeholder="Médico" value={filters.doctor} onChange={e => handleFilterChange('doctor', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <input type="text" aria-label="Filtrar por especialidad" placeholder="Especialidad" value={filters.specialty} onChange={e => handleFilterChange('specialty', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <select aria-label="Filtrar por estado" value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm">
               <option value="">Todos los estados</option>
               <option value="pendiente">Pendiente</option>
               <option value="confirmada">Confirmada</option>
               <option value="cancelada">Cancelada</option>
               <option value="completada">Completada</option>
             </select>
-            <input type="date" value={filters.startDate} onChange={e => handleFilterChange('startDate', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
-            <input type="date" value={filters.endDate} onChange={e => handleFilterChange('endDate', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <input type="date" aria-label="Fecha inicial" value={filters.startDate} onChange={e => handleFilterChange('startDate', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+            <input type="date" aria-label="Fecha final" value={filters.endDate} onChange={e => handleFilterChange('endDate', e.target.value)} className="px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
           </div>
         </CustomCard>
 
@@ -277,12 +277,12 @@ const DashboardPage = () => {
         {selectedAppointment && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
-              <input type="text" value={selectedAppointment.paciente?.nombre || ''} disabled className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
+              <label htmlFor="selected-appointment-patient" className="block text-sm font-medium text-gray-700 mb-1">Paciente</label>
+              <input id="selected-appointment-patient" type="text" value={selectedAppointment.paciente?.nombre || ''} disabled className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select defaultValue={selectedAppointment.estado} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              <label htmlFor="selected-appointment-status" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select id="selected-appointment-status" defaultValue={selectedAppointment.estado} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 <option value="pendiente">Pendiente</option>
                 <option value="confirmada">Confirmada</option>
                 <option value="cancelada">Cancelada</option>
