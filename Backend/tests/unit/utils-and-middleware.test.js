@@ -96,7 +96,7 @@ describe('utils/jwt', () => {
 
     expect(res.cookie).toHaveBeenCalledWith('token', 'token', expect.objectContaining({
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 123456,
     }));
   });
@@ -107,7 +107,7 @@ describe('utils/jwt', () => {
 
     expect(res.clearCookie).toHaveBeenCalledWith('token', expect.objectContaining({
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'none',
     }));
   });
 });
