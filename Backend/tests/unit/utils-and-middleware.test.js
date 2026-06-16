@@ -23,7 +23,12 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../../src/models/User');
 const { sendSuccess, sendCreated, sendPaginated } = require('../../src/utils/response');
-const { generateToken, sendTokenCookie, clearTokenCookie } = require('../../src/utils/jwt');
+const {
+  generateToken,
+  sendTokenCookie,
+  clearTokenCookie,
+  isSecureDeployment,
+} = require('../../src/utils/jwt');
 const { validateRequest, validateMotivo } = require('../../src/utils/validators');
 const { authenticate } = require('../../src/middlewares/auth.middleware');
 const { authorize, authorizeOwnerOrAdmin } = require('../../src/middlewares/role.middleware');
@@ -85,12 +90,23 @@ describe('utils/response', () => {
 });
 
 describe('utils/jwt', () => {
+  const originalRender = process.env.RENDER;
+  const originalRenderExternalUrl = process.env.RENDER_EXTERNAL_URL;
+
+  afterEach(() => {
+    process.env.RENDER = originalRender;
+    process.env.RENDER_EXTERNAL_URL = originalRenderExternalUrl;
+  });
+
   it('generateToken firma con el secreto configurado', () => {
     expect(generateToken('user-1')).toBe('signed-token');
     expect(jwt.sign).toHaveBeenCalledWith({ id: 'user-1' }, 'secret', { expiresIn: '7d' });
   });
 
   it('sendTokenCookie configura cookie httpOnly', () => {
+    delete process.env.RENDER;
+    delete process.env.RENDER_EXTERNAL_URL;
+
     const res = createRes();
     sendTokenCookie(res, 'token');
 
@@ -103,6 +119,9 @@ describe('utils/jwt', () => {
   });
 
   it('clearTokenCookie limpia cookie de sesión', () => {
+    delete process.env.RENDER;
+    delete process.env.RENDER_EXTERNAL_URL;
+
     const res = createRes();
     clearTokenCookie(res);
 
@@ -110,6 +129,23 @@ describe('utils/jwt', () => {
       httpOnly: true,
       sameSite: 'lax',
       secure: false,
+    }));
+  });
+
+  it('detecta despliegues seguros en Render aunque NODE_ENV no sea production', () => {
+    process.env.RENDER = 'true';
+    delete process.env.RENDER_EXTERNAL_URL;
+
+    expect(isSecureDeployment()).toBe(true);
+
+    const res = createRes();
+    sendTokenCookie(res, 'token');
+
+    expect(res.cookie).toHaveBeenCalledWith('token', 'token', expect.objectContaining({
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 123456,
     }));
   });
 });

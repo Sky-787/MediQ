@@ -22,6 +22,7 @@ function CancelModal({ isOpen, motivo, onMotivoChange, onConfirm, onClose, isLoa
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Cancelar cita">
       <textarea
+        aria-label="Motivo de cancelación"
         value={motivo}
         onChange={e => onMotivoChange(e.target.value)}
         placeholder="Motivo de cancelación (opcional)"
@@ -51,6 +52,7 @@ function EditModal({ isOpen, motivo, onMotivoChange, onConfirm, onClose, isLoadi
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Editar motivo de cita">
       <textarea
+        aria-label="Motivo de la consulta"
         value={motivo}
         onChange={e => onMotivoChange(e.target.value)}
         placeholder="Motivo de la consulta"
@@ -329,4 +331,3 @@ export default function MyAppointmentsPage() {
     </div>
   );
 }
-

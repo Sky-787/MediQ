@@ -7,8 +7,14 @@ import MobileMenu from './MobileMenu';
 
 // Los links de navegación viven en el sidebar de AdminLayout
 
+function formatRole(role) {
+  if (!role) return ''
+  const map = { medico: 'Médico', paciente: 'Paciente', admin: 'Administrador' }
+  return map[role] || role
+}
+
 const AdminNavbar = () => {
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -25,9 +31,17 @@ const AdminNavbar = () => {
           {/* Logo → Landing Page */}
           <Link
             to="/"
-            className="text-xl font-bold text-teal-700 dark:text-teal-400 shrink-0 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 shrink-0 hover:opacity-80 transition-opacity"
           >
-            MediQ · Admin
+            <span className="text-xl font-bold text-teal-700 dark:text-teal-400">MediQ</span>
+            <span className="hidden md:flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 max-w-[140px] truncate">
+                {user?.nombre || 'Usuario'}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {formatRole(user?.rol || user?.role)}
+              </span>
+            </span>
           </Link>
 
           {/* Links ocultos: la navegación está en el sidebar de AdminLayout */}

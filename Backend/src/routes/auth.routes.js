@@ -74,7 +74,7 @@ router.post('/login', validateLogin, login);
  *       200:
  *         description: Sesión cerrada correctamente
  */
-router.post('/logout', authenticate, logout);
+router.post('/logout', logout);
 
 /**
  * @swagger

@@ -70,4 +70,11 @@ describe('Auth Flow', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.message).toBe('Sesión cerrada correctamente');
   });
+
+  it('POST /api/auth/logout también responde 200 aunque no llegue cookie', async () => {
+    const res = await request(app).post('/api/auth/logout');
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
 });

@@ -49,9 +49,17 @@ export default function PatientNavbar() {
           {/* Logo → Landing Page */}
           <Link
             to="/"
-            className="text-white dark:text-teal-400 font-bold text-lg shrink-0 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 shrink-0 hover:opacity-80 transition-opacity"
           >
-            MediQ
+            <span className="text-white dark:text-teal-400 font-bold text-lg">MediQ</span>
+            <span className="hidden sm:flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-white dark:text-gray-100 max-w-[140px] truncate">
+                {user?.nombre || 'Usuario'}
+              </span>
+              <span className="text-xs text-white/75 dark:text-gray-400">
+                {formatRole(user?.rol || user?.role)}
+              </span>
+            </span>
           </Link>
 
           {/* Desktop links */}
@@ -66,10 +74,6 @@ export default function PatientNavbar() {
 
           {/* Desktop actions */}
           <div className="hidden sm:flex items-center gap-3">
-            <span className="text-sm text-white/80 dark:text-gray-400 truncate max-w-[120px]">
-              {user?.nombre}
-            </span>
-            <div className="text-sm text-white/70 dark:text-gray-300 text-xs">{formatRole(user?.rol || user?.role)}</div>
             <NotificationsBell />
             <ThemeToggle />
             <button

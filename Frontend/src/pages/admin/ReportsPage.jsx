@@ -182,10 +182,10 @@ const ReportsPage = () => {
             <div className="flex flex-wrap items-center gap-2 print:hidden w-full sm:w-auto">
               <div className="flex items-center gap-2 flex-1 sm:flex-none">
                 <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
-                <input type="date" value={dateRange.startDate} onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })} className="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+                <input type="date" aria-label="Fecha inicial del reporte" value={dateRange.startDate} onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })} className="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
               </div>
               <span className="text-gray-500 dark:text-gray-400 text-sm">a</span>
-              <input type="date" value={dateRange.endDate} onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })} className="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
+              <input type="date" aria-label="Fecha final del reporte" value={dateRange.endDate} onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })} className="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm" />
             </div>
           </div>
           {periodData.length > 0 ? (
