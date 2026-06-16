@@ -21,9 +21,9 @@ const start = async () => {
     process.env.MONGODB_URI = mongoServer.getUri('mediq_e2e');
 
     const app = require('./app');
-    const PORT = process.env.PORT || 5001;
+    const { PORT, MONGODB_URI } = require('./config/env');
 
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(MONGODB_URI);
     console.log('✅ MongoDB en memoria listo para E2E');
 
     await seedUsers();
