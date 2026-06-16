@@ -5,6 +5,9 @@ const { sendSuccess, sendCreated, sendPaginated } = require('../utils/response')
 const createRegistroMedico = () =>
   `RM-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
+const serializeUser = (user) =>
+  typeof user?.toObject === 'function' ? user.toObject() : user;
+
 const enrichUsersWithDoctorData = async (users) => {
   if (!users.length) return [];
 
@@ -20,7 +23,7 @@ const enrichUsersWithDoctorData = async (users) => {
     const doctor = doctorByUserId.get(user._id.toString());
 
     return {
-      ...user.toObject(),
+      ...serializeUser(user),
       especialidad: doctor?.especialidad || null,
       registroMedico: doctor?.registroMedico || null,
     };
@@ -55,7 +58,7 @@ const createUser = async (req, res, next) => {
     }
 
     sendCreated(res, {
-      ...user.toObject(),
+      ...serializeUser(user),
       especialidad: doctor?.especialidad || null,
       registroMedico: doctor?.registroMedico || null,
     }, 'Usuario creado correctamente');
