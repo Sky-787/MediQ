@@ -16,20 +16,53 @@ const weekDays = [
 ];
 
 const AvailabilityPage = () => {
-  const { updateAvailability, isLoading } = useDoctorStore();
+  const { updateAvailability, fetchMyProfile, isLoading } = useDoctorStore();
   const { showToast } = useToastStore();
   const [availability, setAvailability] = useState([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const initialAvailability = weekDays.map(day => ({
+    const defaultAvailability = weekDays.map(day => ({
       dayId: day.id,
       dayName: day.name,
       active: day.id !== 0 && day.id !== 6,
       slots: day.id !== 0 && day.id !== 6 ? ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'] : [],
     }));
-    setAvailability(initialAvailability);
-  }, []);
+
+    const loadProfileAvailability = async () => {
+      try {
+        const doctorProfile = await fetchMyProfile();
+        const storedAvailability = Array.isArray(doctorProfile?.disponibilidad)
+          ? doctorProfile.disponibilidad
+          : [];
+
+        if (storedAvailability.length === 0) {
+          setAvailability(defaultAvailability);
+          return;
+        }
+
+        const availabilityByDay = new Map(
+          storedAvailability.map((item) => [item.dia, Array.isArray(item.horas) ? item.horas : []]),
+        );
+
+        const normalizedAvailability = weekDays.map((day) => {
+          const storedSlots = availabilityByDay.get(day.name) || [];
+          return {
+            dayId: day.id,
+            dayName: day.name,
+            active: storedSlots.length > 0,
+            slots: storedSlots,
+          };
+        });
+
+        setAvailability(normalizedAvailability);
+      } catch {
+        setAvailability(defaultAvailability);
+      }
+    };
+
+    loadProfileAvailability();
+  }, [fetchMyProfile]);
 
   const toggleDay = (dayId) => {
     setAvailability(prev =>
@@ -80,8 +113,8 @@ const AvailabilityPage = () => {
       const formattedAvailability = availability
         .filter(day => day.active && day.slots.length > 0)
         .map(day => ({
-          diaSemana: day.dayId,
-          slots: day.slots,
+          dia: day.dayName,
+          horas: day.slots,
         }));
 
       await updateAvailability(formattedAvailability);
