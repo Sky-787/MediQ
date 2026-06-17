@@ -1,10 +1,12 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, cleanup } from '@testing-library/react';
 
 const mockNavigate = vi.fn();
 const mockRegister = vi.fn();
 const mockShowToast = vi.fn();
+const mockAuthState = vi.fn();
+let currentAuthState;
 
 vi.mock('react-router-dom', () => ({
   Link: ({ children, to }) => <a href={to}>{children}</a>,
@@ -12,10 +14,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 vi.mock('../../../../src/stores/useAuthStore', () => ({
-  useAuthStore: (selector) =>
-    selector({
-      register: mockRegister,
-    }),
+  useAuthStore: (selector) => selector(mockAuthState()),
 }));
 
 vi.mock('../../../../src/stores/useToastStore', () => ({
@@ -30,9 +29,59 @@ import RegisterPage from '../RegisterPage';
 describe('RegisterPage', () => {
   beforeEach(() => {
     vi.useRealTimers();
+    cleanup();
     mockNavigate.mockReset();
     mockRegister.mockReset();
     mockShowToast.mockReset();
+    mockAuthState.mockReset();
+    currentAuthState = {
+      register: mockRegister,
+      user: null,
+      isAuthenticated: false,
+    };
+    mockAuthState.mockImplementation(() => currentAuthState);
+  });
+
+  it('redirige al panel correcto si ya existe sesión autenticada', () => {
+    currentAuthState = {
+      register: mockRegister,
+      user: { rol: 'admin' },
+      isAuthenticated: true,
+    };
+    render(<RegisterPage />);
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/dashboard', { replace: true });
+
+    cleanup();
+    mockNavigate.mockClear();
+    currentAuthState = {
+      register: mockRegister,
+      user: { rol: 'medico' },
+      isAuthenticated: true,
+    };
+    render(<RegisterPage />);
+    expect(mockNavigate).toHaveBeenCalledWith('/doctor', { replace: true });
+
+    cleanup();
+    mockNavigate.mockClear();
+    currentAuthState = {
+      register: mockRegister,
+      user: { rol: 'paciente' },
+      isAuthenticated: true,
+    };
+    render(<RegisterPage />);
+    expect(mockNavigate).toHaveBeenCalledWith('/patient/search', { replace: true });
+  });
+
+  it('redirige al inicio si el usuario autenticado tiene un rol no reconocido', () => {
+    currentAuthState = {
+      register: mockRegister,
+      user: { rol: 'otro' },
+      isAuthenticated: true,
+    };
+
+    render(<RegisterPage />);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
   });
 
   it('muestra la fortaleza de la contraseña y registra con exito', async () => {
@@ -115,8 +164,10 @@ describe('RegisterPage', () => {
     });
   });
 
-  it('calcula fortalezas debil y media segun la contraseña escrita', () => {
+  it('calcula fortalezas vacía, débil y media según la contraseña escrita', () => {
     render(<RegisterPage />);
+
+    expect(screen.queryByText(/Fortaleza:/)).not.toBeInTheDocument();
 
     const passwordInput = screen.getByLabelText('Contraseña');
     fireEvent.change(passwordInput, { target: { value: '123' } });
@@ -165,6 +216,24 @@ describe('RegisterPage', () => {
       expect(
         screen.getByText('El nombre debe tener al menos 2 caracteres'),
       ).toBeInTheDocument();
+    });
+
+    expect(mockRegister).not.toHaveBeenCalled();
+  });
+
+  it('muestra error de correo inválido y no envía el formulario', async () => {
+    const { container } = render(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText('Nombre completo'), { target: { value: 'Laura' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'correo-invalido' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Clave123*' } });
+    fireEvent.change(screen.getByLabelText('Confirmar Contraseña'), {
+      target: { value: 'Clave123*' },
+    });
+    fireEvent.submit(container.querySelector('form'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Email inválido')).toBeInTheDocument();
     });
 
     expect(mockRegister).not.toHaveBeenCalled();
@@ -234,5 +303,3 @@ describe('RegisterPage', () => {
     });
   });
 });
-
-

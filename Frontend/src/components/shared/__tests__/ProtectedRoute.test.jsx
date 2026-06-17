@@ -6,6 +6,7 @@ const mockNavigate = vi.fn();
 const mockOutlet = vi.fn(() => <div>contenido protegido</div>);
 const mockUseAuthStore = vi.fn();
 const mockCheckSession = vi.fn();
+const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 vi.mock('react-router-dom', () => ({
   Navigate: ({ to }) => {
@@ -13,6 +14,7 @@ vi.mock('react-router-dom', () => ({
     return <div>redirect:{to}</div>;
   },
   Outlet: () => mockOutlet(),
+  useLocation: () => ({ pathname: '/admin/dashboard' }),
 }));
 
 vi.mock('../../../stores/useAuthStore', () => ({
@@ -22,6 +24,10 @@ vi.mock('../../../stores/useAuthStore', () => ({
 import ProtectedRoute from '../ProtectedRoute';
 
 describe('ProtectedRoute', () => {
+  afterEach(() => {
+    mockConsoleError.mockClear();
+  });
+
   it('muestra spinner mientras valida la sesion', () => {
     mockUseAuthStore.mockReturnValue({
       isAuthenticated: false,
@@ -61,6 +67,9 @@ describe('ProtectedRoute', () => {
     render(<ProtectedRoute allowedRoles={['admin']} />);
 
     expect(mockNavigate).toHaveBeenCalledWith('/');
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      '[403 Forbidden] Acceso denegado a /admin/dashboard. Rol actual: paciente. Roles permitidos: admin',
+    );
   });
 
   it('renderiza el outlet si el usuario tiene acceso', () => {

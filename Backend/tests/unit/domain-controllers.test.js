@@ -12,6 +12,8 @@ jest.mock('../../src/models/User', () => ({
   findById: jest.fn(),
   find: jest.fn(),
   countDocuments: jest.fn(),
+  findOne: jest.fn(),
+  create: jest.fn(),
   findByIdAndUpdate: jest.fn(),
   findByIdAndDelete: jest.fn(),
 }));
@@ -215,6 +217,9 @@ describe('domain controllers', () => {
       limit: jest.fn().mockResolvedValue([]),
     });
     User.countDocuments.mockResolvedValueOnce(0);
+    Doctor.find.mockReturnValueOnce({
+      select: jest.fn().mockResolvedValue([]),
+    });
     await userController.getUsers({ query: {} }, res, next);
     expect(responseUtils.sendPaginated).toHaveBeenCalled();
 
@@ -252,6 +257,9 @@ describe('domain controllers', () => {
     const res = createRes();
     const next = jest.fn();
 
+    Doctor.find.mockReturnValueOnce({
+      select: jest.fn().mockResolvedValue([]),
+    });
     User.findById.mockResolvedValueOnce({ _id: 'u1' });
     await userController.getUserById({ params: { id: 'u1' } }, res, next);
     expect(responseUtils.sendSuccess).toHaveBeenCalledWith(res, expect.objectContaining({ _id: 'u1' }));

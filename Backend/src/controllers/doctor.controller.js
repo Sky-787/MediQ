@@ -6,6 +6,37 @@ const {
   sendPaginated,
 } = require('../utils/response');
 
+const DAY_NAME_BY_ID = {
+  0: 'Domingo',
+  1: 'Lunes',
+  2: 'Martes',
+  3: 'Miércoles',
+  4: 'Jueves',
+  5: 'Viernes',
+  6: 'Sábado',
+};
+
+const normalizeAvailability = (availability = []) =>
+  (Array.isArray(availability) ? availability : [])
+    .map((item) => {
+      if (item?.dia && Array.isArray(item?.horas)) {
+        return {
+          dia: item.dia,
+          horas: item.horas,
+        };
+      }
+
+      if (typeof item?.diaSemana === 'number' && Array.isArray(item?.slots)) {
+        return {
+          dia: DAY_NAME_BY_ID[item.diaSemana],
+          horas: item.slots,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
 // 1. getDoctors
 const getDoctors = async (req, res, next) => {
   try {
@@ -43,6 +74,25 @@ const getDoctorById = async (req, res, next) => {
       return res
         .status(404)
         .json({ success: false, message: 'Médico no encontrado' });
+    }
+
+    sendSuccess(res, doctor);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getOwnDoctorProfile = async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findOne({ userId: req.user._id }).populate(
+      'userId',
+      'nombre email'
+    );
+
+    if (!doctor) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Perfil de médico no encontrado' });
     }
 
     sendSuccess(res, doctor);
@@ -114,6 +164,42 @@ const updateDoctor = async (req, res, next) => {
   }
 };
 
+const updateOwnDoctorProfile = async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findOne({ userId: req.user._id });
+
+    if (!doctor) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Perfil de médico no encontrado' });
+    }
+
+    const { especialidad, registroMedico, disponibilidad } = req.body;
+    const updateData = {};
+
+    if (typeof especialidad !== 'undefined') {
+      updateData.especialidad = especialidad;
+    }
+
+    if (typeof registroMedico !== 'undefined') {
+      updateData.registroMedico = registroMedico;
+    }
+
+    if (typeof disponibilidad !== 'undefined') {
+      updateData.disponibilidad = normalizeAvailability(disponibilidad);
+    }
+
+    const updatedDoctor = await Doctor.findByIdAndUpdate(doctor._id, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate('userId', 'nombre email');
+
+    sendSuccess(res, updatedDoctor);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 5. deleteDoctor (solo admin seguro)
 const deleteDoctor = async (req, res, next) => {
   try {
@@ -136,7 +222,9 @@ const deleteDoctor = async (req, res, next) => {
 module.exports = {
   getDoctors,
   getDoctorById,
+  getOwnDoctorProfile,
   createDoctor,
   updateDoctor,
+  updateOwnDoctorProfile,
   deleteDoctor,
 };
