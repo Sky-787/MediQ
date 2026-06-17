@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Filter, Plus, Search, UserCog } from 'lucide-react';
+import { Check, Edit, Filter, Plus, Search, UserCog, X } from 'lucide-react';
 import useApi from '../../hooks/useApi';
 import useToastStore from '../../stores/useToastStore';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -52,6 +52,7 @@ const UsersManagementPage = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState(initialForm);
+  const [editingRole, setEditingRole] = useState({ userId: null, role: '' });
 
   const loadUsers = useCallback(async () => {
     try {
@@ -71,6 +72,17 @@ const UsersManagementPage = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPagination((prev) => ({ ...prev, page: 1 }));
   }, [searchTerm, roleFilter, statusFilter]);
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      await fetchData({ url: `/users/${userId}`, method: 'PUT', data: { rol: newRole } });
+      showToast('Rol actualizado exitosamente', 'success');
+      setEditingRole({ userId: null, role: '' });
+      await loadUsers();
+    } catch {
+      showToast('Error al actualizar rol', 'error');
+    }
+  };
 
   const handleCreateFormChange = (field, value) => {
     setCreateForm((prev) => {
@@ -249,9 +261,48 @@ const UsersManagementPage = () => {
                           {user.email}
                         </td>
                         <td className="px-4 sm:px-6 py-4">
-                          <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeClass(user.rol)}`}>
-                            {user.rol}
-                          </span>
+                          {editingRole.userId === user._id ? (
+                            <div className="flex items-center gap-2">
+                              <select
+                                aria-label={`Cambiar rol de ${user.nombre}`}
+                                value={editingRole.role}
+                                onChange={(e) => setEditingRole({ userId: user._id, role: e.target.value })}
+                                className="text-sm border border-gray-300 rounded px-2 py-1"
+                                autoFocus
+                              >
+                                <option value="admin">Admin</option>
+                                <option value="medico">Médico</option>
+                                <option value="paciente">Paciente</option>
+                              </select>
+                              <button
+                                onClick={() => handleRoleChange(user._id, editingRole.role)}
+                                className="text-green-600 hover:text-green-800"
+                                aria-label="Confirmar cambio de rol"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setEditingRole({ userId: null, role: '' })}
+                                className="text-red-600 hover:text-red-800"
+                                aria-label="Cancelar cambio de rol"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeClass(user.rol)}`}>
+                                {user.rol}
+                              </span>
+                              <button
+                                onClick={() => setEditingRole({ userId: user._id, role: user.rol })}
+                                className="text-gray-400 hover:text-teal-700"
+                                aria-label={`Editar rol de ${user.nombre}`}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 sm:px-6 py-4">
                           <span className={`inline-flex items-center px-2 py-1 text-xs rounded-full ${statusMeta.className}`}>
