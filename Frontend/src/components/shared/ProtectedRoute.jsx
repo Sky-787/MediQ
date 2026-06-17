@@ -1,6 +1,6 @@
 // src/components/shared/ProtectedRoute.jsx
 import { useEffect } from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../stores/useAuthStore'
 
 /**
@@ -19,6 +19,7 @@ import { useAuthStore } from '../../stores/useAuthStore'
  */
 export default function ProtectedRoute({ allowedRoles }) {
   const { isAuthenticated, isLoading, user, checkSession } = useAuthStore()
+  const location = useLocation()
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -38,6 +39,9 @@ export default function ProtectedRoute({ allowedRoles }) {
 
   // 3. Rol no autorizado → ir al inicio
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user?.rol)) {
+    console.error(
+      `[403 Forbidden] Acceso denegado a ${location.pathname}. Rol actual: ${user?.rol || 'desconocido'}. Roles permitidos: ${allowedRoles.join(', ')}`,
+    )
     return <Navigate to="/" replace />
   }
 

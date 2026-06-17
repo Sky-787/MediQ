@@ -31,10 +31,26 @@ const useDoctorStore = create((set) => ({
     }
   },
 
+  fetchMyProfile: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await axiosInstance.get('/doctors/profile');
+      const doctorData = res.data?.data || res.data;
+      set({ isLoading: false });
+      return doctorData;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || 'Error al cargar el perfil del médico',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
   /**
    * updateAvailability(disponibilidad)
    * Actualiza la disponibilidad del médico autenticado.
-   * @param {Array} disponibilidad - Array de { diaSemana, slots }
+   * @param {Array} disponibilidad - Array de { dia, horas }
    */
   updateAvailability: async (disponibilidad) => {
     set({ isLoading: true, error: null });
